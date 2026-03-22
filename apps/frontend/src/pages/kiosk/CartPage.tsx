@@ -1,6 +1,64 @@
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../stores/useCartStore';
 import { format } from 'date-fns';
+import type { CartItem } from '../../types';
+
+function CartItemRow({ item, onUpdateQuantity, onRemove }: {
+  item: CartItem;
+  onUpdateQuantity: (itemId: string, quantity: number) => void;
+  onRemove: (itemId: string) => void;
+}) {
+  const lineTotal = item.price * item.quantity;
+
+  return (
+    <div
+      className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 border border-[#e8e8e8] transition-all duration-300 hover:shadow-md"
+    >
+      <div className="w-16 h-16 rounded-lg bg-[#f3f3f3] flex items-center justify-center overflow-hidden shrink-0">
+        {item.product.imageUrl ? (
+          <img
+            src={item.product.imageUrl}
+            alt={item.product.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="material-symbols-outlined text-[#b5000b]/40 text-3xl">inventory_2</span>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-[#1a1c1c] truncate">{item.product.name}</div>
+        <div className="text-[#5e3f3b] text-sm">${item.product.price.toFixed(2)} c/u</div>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+          className="w-10 h-10 rounded-xl bg-[#e8e8e8] hover:bg-[#e9bcb6]/50 font-bold text-[#1a1c1c] transition-colors flex items-center justify-center"
+          aria-label="Reducir cantidad"
+        >
+          −
+        </button>
+        <span className="w-12 text-center font-bold text-[#1a1c1c]">{item.quantity}</span>
+        <button
+          onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+          className="w-10 h-10 rounded-xl bg-[#e8e8e8] hover:bg-[#e9bcb6]/50 font-bold text-[#1a1c1c] transition-colors flex items-center justify-center"
+          aria-label="Aumentar cantidad"
+        >
+          +
+        </button>
+      </div>
+      <div className="w-24 text-right font-bold text-[#1a1c1c] shrink-0">
+        ${lineTotal.toFixed(2)}
+      </div>
+      <button
+        onClick={() => onRemove(item.id)}
+        className="p-2 text-[#b5000b] hover:bg-red-50 rounded-xl transition-colors"
+        aria-label="Eliminar"
+      >
+        <span className="material-symbols-outlined">delete</span>
+      </button>
+    </div>
+  );
+}
 
 export function CartPage() {
   const navigate = useNavigate();
@@ -8,98 +66,93 @@ export function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-8">
-        <div className="text-6xl mb-4">🛒</div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Carrito vacío</h2>
-        <p className="text-slate-600 mb-8">Agregue productos escaneándolos</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f9f9f9] p-8">
+        <span className="material-symbols-outlined text-[#3a5f94] text-8xl mb-4" style={{ fontVariationSettings: "'wght' 200" }}>
+          shopping_cart
+        </span>
+        <h2 className="text-2xl font-black text-[#1a1c1c] mb-2">Carrito vacío</h2>
+        <p className="text-[#5e3f3b] mb-8 text-center">Agregue productos escaneándolos</p>
         <button
           onClick={() => navigate('/kiosk/scan')}
-          className="px-8 py-4 bg-emerald-600 text-white rounded-xl text-lg font-medium"
+          className="px-8 py-4 bg-[#b5000b] hover:bg-[#930007] text-white rounded-xl text-lg font-bold flex items-center gap-2 transition-colors"
         >
-          AGREGAR PRODUCTOS
+          <span className="material-symbols-outlined">qr_code_scanner</span>
+          Agregar productos
         </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      <header className="p-4 bg-white shadow">
-        <div className="flex justify-between items-center">
-          <button onClick={() => navigate('/kiosk/scan')} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded">
-            ← Agregar más
+    <div className="min-h-screen flex flex-col bg-[#f9f9f9] text-[#1a1c1c]">
+      <header className="w-full bg-white shadow-sm border-b border-[#e8e8e8]">
+        <div className="flex justify-between items-center w-full px-6 py-4 max-w-2xl mx-auto">
+          <button
+            onClick={() => navigate('/kiosk/scan')}
+            className="flex items-center gap-2 px-4 py-2 text-[#3a5f94] font-bold hover:bg-[#f3f3f3] rounded-xl transition-colors"
+          >
+            <span className="material-symbols-outlined">add_circle</span>
+            Agregar más
           </button>
-          <h2 className="text-xl font-bold">
-            {items.length} {items.length === 1 ? 'producto' : 'productos'}
-          </h2>
-          <div />
+          <div className="text-center">
+            <div className="font-black text-[#1a1c1c]">
+              {items.length} {items.length === 1 ? 'producto' : 'productos'}
+            </div>
+            <div className="text-[#3a5f94] font-bold text-lg">${total.toFixed(2)}</div>
+          </div>
+          <div className="w-24" />
         </div>
       </header>
 
       <main className="flex-1 overflow-auto p-6">
         <div className="max-w-2xl mx-auto space-y-4">
           {items.map((item) => (
-            <div
+            <CartItemRow
               key={item.id}
-              className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4"
-            >
-              <div className="flex-1">
-                <div className="font-medium text-slate-800">{item.product.name}</div>
-                <div className="text-slate-500">${item.product.price.toFixed(2)} c/u</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                  className="w-10 h-10 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold"
-                >
-                  −
-                </button>
-                <span className="w-12 text-center font-bold">{item.quantity}</span>
-                <button
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  className="w-10 h-10 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold"
-                >
-                  +
-                </button>
-              </div>
-              <div className="w-24 text-right font-bold">${(item.price * item.quantity).toFixed(2)}</div>
-              <button
-                onClick={() => removeItem(item.id)}
-                className="p-2 text-red-600 hover:bg-red-50 rounded"
-                aria-label="Eliminar"
-              >
-                🗑️
-              </button>
-            </div>
+              item={item}
+              onUpdateQuantity={updateQuantity}
+              onRemove={removeItem}
+            />
           ))}
         </div>
 
-        <div className="max-w-2xl mx-auto mt-8 bg-white rounded-xl p-6 shadow-sm">
-          <div className="space-y-2">
-            <div className="flex justify-between text-slate-600">
+        <div className="max-w-2xl mx-auto mt-8 bg-white rounded-2xl p-6 shadow-sm border border-[#e8e8e8]">
+          <div className="space-y-3">
+            <div className="flex justify-between text-[#5e3f3b]">
               <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span className="font-medium">${subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-[#5e3f3b]">
               <span>IVA (16%)</span>
-              <span>${tax.toFixed(2)}</span>
+              <span className="font-medium">${tax.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-xl font-bold pt-4 border-t">
+            <div className="flex justify-between text-xl font-black pt-4 border-t-2 border-[#e8e8e8]">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span className="text-[#b5000b]">${total.toFixed(2)}</span>
             </div>
           </div>
-          <button
-            onClick={() => navigate('/kiosk/payment')}
-            className="w-full mt-6 py-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xl font-bold rounded-xl"
-          >
-            IR A PAGO
-          </button>
+
+          <div className="flex flex-col gap-3 mt-6">
+            <button
+              onClick={() => navigate('/kiosk/payment')}
+              className="w-full py-4 bg-[#b5000b] hover:bg-[#930007] text-white text-xl font-black rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">payment</span>
+              Ir a pago
+            </button>
+            <button
+              onClick={() => navigate('/kiosk/scan')}
+              className="w-full py-3 bg-[#3a5f94] hover:opacity-90 text-white font-bold rounded-xl transition-opacity flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">add_shopping_cart</span>
+              Agregar más
+            </button>
+          </div>
         </div>
       </main>
 
-      <footer className="p-4 text-center text-slate-500 text-sm">
-        {format(new Date(), 'EEEE d MMMM • HH:mm')}
+      <footer className="p-4 text-center text-[#5e3f3b]/70 text-sm border-t border-[#e8e8e8] bg-white/50">
+        {format(new Date(), 'EEEE d MMMM · HH:mm')}
       </footer>
     </div>
   );

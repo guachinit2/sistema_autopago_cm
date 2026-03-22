@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCartStore } from '../../stores/useCartStore';
+import type { Product } from '../../types';
+import { playScanBeep } from '../../utils/beep';
+import { BarcodeCamera } from '../../components/kiosk/BarcodeCamera';
 
 // Productos mock para pruebas (sin API)
 const MOCK_PRODUCTS: Record<string, { name: string; price: number }> = {
@@ -10,48 +13,102 @@ const MOCK_PRODUCTS: Record<string, { name: string; price: number }> = {
   '22222222': { name: 'Pan integral', price: 0.85 },
 };
 
+function resolveProduct(code: string): Product {
+  const match = MOCK_PRODUCTS[code];
+  const name = match?.name ?? `Producto ${code.slice(0, 6)}`;
+  const price = match?.price ?? Math.random() * 10 + 0.5;
+  return {
+    id: code,
+    sku: code,
+    barcode: code,
+    name,
+    price,
+  };
+}
+
 export function ScanPage() {
   const navigate = useNavigate();
   const addItem = useCartStore((s) => s.addItem);
   const [manualCode, setManualCode] = useState('');
   const [scanStatus, setScanStatus] = useState<'idle' | 'valid' | 'invalid' | 'partial'>('idle');
+  const [cameraActive, setCameraActive] = useState(false);
+  const usbBufferRef = useRef({ buffer: '', lastKeyTime: 0 });
+  const scanCooldownRef = useRef(false);
+
+  const processCode = useCallback(
+    (code: string) => {
+      const trimmed = code.trim();
+      if (trimmed.length >= 8) {
+        const product = resolveProduct(trimmed);
+        addItem(product);
+        setScanStatus('valid');
+        playScanBeep();
+        if (navigator.vibrate) navigator.vibrate(200);
+        scanCooldownRef.current = true;
+        setTimeout(() => {
+          scanCooldownRef.current = false;
+          setScanStatus('idle');
+        }, 800);
+      } else if (trimmed.length > 0) {
+        setScanStatus('partial');
+      } else {
+        setScanStatus('invalid');
+      }
+    },
+    [addItem]
+  );
 
   const handleManualSubmit = () => {
-    const code = manualCode.trim();
-    if (code.length >= 8) {
-      const product = MOCK_PRODUCTS[code] ?? {
-        name: `Producto ${code.slice(0, 6)}`,
-        price: Math.random() * 10 + 0.5,
-      };
-      addItem({
-        id: crypto.randomUUID(),
-        sku: code,
-        barcode: code,
-        name: product.name,
-        price: product.price,
-      });
-      setScanStatus('valid');
-      setManualCode('');
-      setTimeout(() => setScanStatus('idle'), 1500);
-    } else if (code.length > 0) {
-      setScanStatus('partial');
-    } else {
-      setScanStatus('invalid');
-    }
+    processCode(manualCode);
+    setManualCode('');
   };
 
+  // Fallback USB: escáneres USB emulan teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        if (e.key === 'Enter' && (e.target as HTMLInputElement).id === 'manual-barcode-input') return;
+        if ((e.target as HTMLInputElement).id === 'manual-barcode-input') return;
+      }
+
+      const now = Date.now();
+      const { buffer, lastKeyTime } = usbBufferRef.current;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (buffer.length >= 8 && now - lastKeyTime < 200 && !scanCooldownRef.current) {
+          processCode(buffer);
+        }
+        usbBufferRef.current = { buffer: '', lastKeyTime: 0 };
+        return;
+      }
+
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const newBuffer = buffer + e.key;
+        usbBufferRef.current = {
+          buffer: newBuffer.length <= 20 ? newBuffer : buffer,
+          lastKeyTime: now,
+        };
+        if (newBuffer.length > 20) usbBufferRef.current.buffer = '';
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [processCode]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-background text-on-background">
-      <header className="w-full bg-white shadow-sm border-b border-surface-container-high">
+    <div className="min-h-screen flex flex-col bg-[#f9f9f9] text-[#1a1c1c]">
+      <header className="w-full bg-white shadow-sm border-b border-[#e8e8e8]">
         <div className="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-4 py-2 text-secondary font-bold hover:bg-surface-container-low rounded-xl transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-[#3a5f94] font-bold hover:bg-[#f3f3f3] rounded-xl transition-colors"
           >
             <span className="material-symbols-outlined">arrow_back</span>
             Volver
           </button>
-          <h2 className="text-xl font-black text-on-background tracking-tight">Escanear productos</h2>
+          <h2 className="text-xl font-black text-[#1a1c1c] tracking-tight">Escanear productos</h2>
           <button
             onClick={() => navigate('/kiosk/cart')}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#b5000b] hover:bg-[#930007] text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition-all"
@@ -63,34 +120,53 @@ export function ScanPage() {
       </header>
 
       <main className="flex-1 p-6 flex flex-col gap-6 max-w-2xl mx-auto w-full">
-        <div className="w-full aspect-video bg-surface-container-low rounded-2xl flex flex-col items-center justify-center gap-4 border-2 border-dashed border-outline-variant/50">
-          <span className="material-symbols-outlined text-primary text-6xl opacity-60" style={{ fontVariationSettings: "'wght' 200" }}>
-            qr_code_scanner
-          </span>
-          <p className="text-on-surface-variant font-medium">Cámara: integrar html5-qrcode en siguiente iteración</p>
+        {/* Área cámara - activar manualmente por ahora (en producción: auto-iniciar) */}
+        <div className="relative w-full min-h-[200px] aspect-video max-h-[320px] bg-[#e8e8e8] rounded-2xl overflow-hidden border-2 border-[#e9bcb6]/50">
+          {cameraActive ? (
+            <BarcodeCamera
+              onScan={processCode}
+              onClose={() => setCameraActive(false)}
+              onError={() => setCameraActive(false)}
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#e8e8e8]">
+              <span className="material-symbols-outlined text-[#3a5f94] text-5xl" style={{ fontVariationSettings: "'wght' 200" }}>
+                qr_code_scanner
+              </span>
+              <p className="text-[#5e3f3b] font-medium text-center px-4">Cámara desactivada</p>
+              <button
+                onClick={() => setCameraActive(true)}
+                className="px-6 py-3 bg-[#3a5f94] text-white font-bold rounded-xl hover:opacity-90 flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined">videocam</span>
+                Activar cámara
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Feedback de escaneo */}
         <div
-          className={`p-4 rounded-xl text-center text-lg font-bold ${
+          className={`p-4 rounded-xl text-center text-lg font-bold transition-colors ${
             scanStatus === 'valid'
               ? 'bg-emerald-100 text-emerald-800'
               : scanStatus === 'invalid'
                 ? 'bg-red-100 text-red-800'
                 : scanStatus === 'partial'
                   ? 'bg-amber-100 text-amber-800'
-                  : 'bg-surface-container-low text-on-surface-variant'
+                  : 'bg-[#f3f3f3] text-[#5e3f3b]'
           }`}
         >
           {scanStatus === 'idle' && (
             <span className="flex items-center justify-center gap-2">
               <span className="material-symbols-outlined">qr_code_2</span>
-              Coloque el código de barras frente a la cámara
+              Ingrese el código manualmente o use escáner USB
             </span>
           )}
           {scanStatus === 'valid' && (
             <span className="flex items-center justify-center gap-2">
               <span className="material-symbols-outlined">check_circle</span>
-              Producto encontrado
+              Producto agregado
             </span>
           )}
           {scanStatus === 'invalid' && (
@@ -102,30 +178,35 @@ export function ScanPage() {
           {scanStatus === 'partial' && (
             <span className="flex items-center justify-center gap-2">
               <span className="material-symbols-outlined">schedule</span>
-              Código parcial
+              Código parcial (mín. 8 dígitos)
             </span>
           )}
         </div>
 
-        <div className="border-t border-surface-container-high pt-6">
-          <label className="block text-secondary font-bold mb-2">Código manual (fallback)</label>
+        {/* Input manual */}
+        <div className="border-t border-[#e8e8e8] pt-6">
+          <label className="block text-[#3a5f94] font-bold mb-2">Código manual</label>
           <div className="flex gap-3">
             <input
+              id="manual-barcode-input"
               type="text"
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
-              placeholder="Ingrese código de barras"
-              className="flex-1 px-4 py-3 border-2 border-outline-variant rounded-xl text-lg font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              onKeyDown={(e) => e.key === 'Enter' && (handleManualSubmit(), e.preventDefault())}
+              placeholder="Ej: 12345678, 87654321, 11111111, 22222222"
+              className="flex-1 px-4 py-3 border-2 border-[#e9bcb6] rounded-xl text-lg font-medium focus:border-[#b5000b] focus:ring-2 focus:ring-[#b5000b]/20 outline-none transition-all bg-white"
             />
             <button
               onClick={handleManualSubmit}
-              className="px-6 py-3 bg-secondary text-on-secondary rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center gap-2"
+              className="px-6 py-3 bg-[#3a5f94] text-white rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center gap-2"
             >
               <span className="material-symbols-outlined">search</span>
               Buscar
             </button>
           </div>
+          <p className="mt-2 text-sm text-[#5e3f3b]/70">
+            Escáneres USB: escanee y el producto se agregará automáticamente.
+          </p>
         </div>
       </main>
     </div>
