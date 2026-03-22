@@ -1,9 +1,11 @@
+import cors from 'cors';
 import express from 'express';
 import productsRouter from './routes/products';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
