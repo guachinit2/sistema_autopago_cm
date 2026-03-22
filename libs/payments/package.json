@@ -1,0 +1,5 @@
+{
+  "name": "@self-checkout/payments",
+  "version": "1.0.0",
+  "description": "Adaptadores de pago"
+}

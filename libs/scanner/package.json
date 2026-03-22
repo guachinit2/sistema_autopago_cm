@@ -1,0 +1,5 @@
+{
+  "name": "@self-checkout/scanner",
+  "version": "1.0.0",
+  "description": "Wrapper para escáner de códigos de barras"
+}

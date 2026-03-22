@@ -1,0 +1,22 @@
+{
+  "name": "self-checkout-system",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.0"
+  },
+  "dependencies": {
+    "@ericblade/quagga2": "^1.12.1",
+    "html5-qrcode": "^2.3.8"
+  }
+}

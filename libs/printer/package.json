@@ -1,0 +1,5 @@
+{
+  "name": "@self-checkout/printer",
+  "version": "1.0.0",
+  "description": "Wrapper para impresora térmica"
+}
