@@ -1,0 +1,17 @@
+# Normalizar saltos de línea a LF para consistencia cross-platform
+* text=auto eol=lf
+
+# Scripts shell deben usar LF (Docker, Linux)
+*.sh text eol=lf
+
+# Bat de Windows usan CRLF
+*.bat text eol=crlf
+
+# Archivos binarios no deben ser convertidos
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
