@@ -1,1 +1,12 @@
 # Override de docker-compose para desarrollo local
+# Añade comandos y configuraciones específicas para desarrollo
+
+services:
+  backend:
+    command: npm run dev
+
+  frontend:
+    command: npm run dev
+
+  socket-server:
+    command: npm run dev:socket

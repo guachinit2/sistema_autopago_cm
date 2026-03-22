@@ -1,0 +1,14 @@
+# apps/backend/Dockerfile.socket
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 3002
+
+# Modo desarrollo con hot-reload cuando se montan volúmenes
+CMD ["npm", "run", "dev:socket"]

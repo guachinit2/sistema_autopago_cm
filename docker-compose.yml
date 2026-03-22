@@ -1,0 +1,132 @@
+services:
+  # Base de datos principal
+  postgres:
+    image: postgres:15-alpine
+    container_name: autopago-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-autopago}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - autopago-network
+
+  # Cache y sesiones
+  redis:
+    image: redis:7-alpine
+    container_name: autopago-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - autopago-network
+
+  # Servidor de tiempo real
+  socket-server:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile.socket
+    container_name: autopago-socket
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - autopago-network
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
+
+  # Backend API
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: autopago-backend
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/autopago
+      - REDIS_URL=redis://redis:6379
+      - SOCKET_URL=http://socket-server:3002
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key}
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - autopago-network
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
+
+  # Frontend
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: autopago-frontend
+    environment:
+      - VITE_API_URL=http://localhost:3001
+      - VITE_SOCKET_URL=http://localhost:3002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - autopago-network
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+
+  # Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: autopago-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+      - socket-server
+    networks:
+      - autopago-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  autopago-network:
+    driver: bridge

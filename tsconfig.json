@@ -1,1 +1,11 @@
-// Configuración base de TypeScript
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "exclude": ["node_modules"]
+}
