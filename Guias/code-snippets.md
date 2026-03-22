@@ -85,12 +85,14 @@ GET    /api/v1/inventory/:productId   # Consultar inventario
 ## 4. Eventos Socket.io
 
 **Client → Server:**
+
 - `checkout:join` - Unirse a sesión de checkout
 - `cart:add` - Agregar producto al carrito
 - `cart:remove` - Eliminar producto del carrito
 - `payment:init` - Iniciar proceso de pago
 
 **Server → Client:**
+
 - `cart:updated` - Carrito actualizado
 - `product:found` - Producto escaneado encontrado
 - `product:not_found` - Producto no encontrado
@@ -348,7 +350,8 @@ class PromotionEngine {
 import { property, integer } from 'jsverify';
 
 describe('PromotionEngine', () => {
-  property('discount never exceeds cart total', 
+  property(
+    'discount never exceeds cart total',
     forall({ cart: cartArbitrary }, (gen) => {
       const cart = gen.cart;
       const promotion = createValidPromotion();
@@ -357,7 +360,8 @@ describe('PromotionEngine', () => {
     })
   );
 
-  property('quantity updates preserve cart integrity',
+  property(
+    'quantity updates preserve cart integrity',
     forall({ cart: cartArbitrary, productId: productArbitrary }, (gen) => {
       const cart = gen.cart;
       const productId = gen.productId;
@@ -379,11 +383,11 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '2m', target: 100 },  // Ramp up
-    { duration: '5m', target: 100 },  // Stay at 100
-    { duration: '2m', target: 500 },  // Ramp up to 500
-    { duration: '5m', target: 500 },  // Stay at 500
-    { duration: '2m', target: 0 },    // Ramp down
+    { duration: '2m', target: 100 }, // Ramp up
+    { duration: '5m', target: 100 }, // Stay at 100
+    { duration: '2m', target: 500 }, // Ramp up to 500
+    { duration: '5m', target: 500 }, // Stay at 500
+    { duration: '2m', target: 0 }, // Ramp down
   ],
   thresholds: {
     http_req_duration: ['p(95)<500'],
@@ -479,6 +483,7 @@ jobs:
 # Runbook: Recuperación de Kiosk Fallido
 
 ## Síntomas
+
 - El kiosk no responde a requests
 - Conexión Socket.io perdida
 - Usuarios reportan problemas
@@ -493,6 +498,7 @@ jobs:
 
 3. Si el pod está en estado Error:
    kubectl delete pod -n checkout kiosk-03-xxx
+
    # El Deployment recreará el pod automáticamente
 
 4. Verificar recuperación

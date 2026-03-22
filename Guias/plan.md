@@ -15,21 +15,25 @@ La arquitectura propuesta sigue el patrón de microservicios con comunicación s
 El sistema se compone de cinco capas principales que trabajan de forma coordinada:
 
 **Capa de Presentación (Frontend):**
+
 - Interfaz de Kiosk para pantalla táctil
 - Dashboard administrativo para gestión
 - Aplicación móvil opcional (PWA)
 
 **Capa de Balanceo:**
+
 - NGINX o Traefik como reverse proxy
 - Distribución de carga entre instancias
 - Terminación de SSL/TLS
 
 **Capa de Servicios (Backend):**
+
 - API REST con NestJS para operaciones síncronas
 - Servidor Socket.io para comunicación en tiempo real
 - Servicios de negocio modulares y reutilizables
 
 **Capa de Datos:**
+
 - PostgreSQL como base de datos principal
 - Redis para caché y gestión de sesiones
 - APIs externas para pagos y notificaciones
@@ -82,6 +86,18 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 1. **Configuración del Entorno:**
    Repositorio con estructura monorepo, Docker Compose con PostgreSQL y Redis, TypeScript configurado, ESLint y Prettier, Husky para git hooks, CI/CD básico en GitHub Actions.
 
+   **Estado - Configuración del Entorno:**
+
+   | Item                                  | Estado       | Notas                                                               |
+   | ------------------------------------- | ------------ | ------------------------------------------------------------------- |
+   | Estructura monorepo                   | ✅ Hecho     | apps/, packages/, libs/ con Turborepo y workspaces                  |
+   | Docker Compose con PostgreSQL y Redis | ✅ Hecho     | docker-compose.yml con postgres:15-alpine y redis:7-alpine          |
+   | TypeScript configurado                | ✅ Hecho     | tsconfig.json en raíz, backend y frontend                           |
+   | ESLint                                | ✅ Hecho    | Configurado con TypeScript y React, eslint-config-prettier          |
+   | Prettier                              | ✅ Hecho    | Configurado con .prettierrc, integrado con ESLint                    |
+   | Husky para git hooks                  | ⏳ Pendiente | No instalado                                                        |
+   | CI/CD básico en GitHub Actions        | ⏳ Pendiente | No existe `.github/workflows/`                                      |
+
 2. **API de Productos:**
    Búsqueda por código de barras, consulta por ID, gestión de catálogo con tiempos de respuesta menores a 200ms.
 
@@ -92,6 +108,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
    Eventos bidireccionales entre kiosk y servidor para actualizaciones instantáneas del carrito.
 
 **Criterio de Éxito:**
+
 - Un usuario puede escanear productos y agregarlos al carrito
 - El sistema calcula totales correctamente
 - Los datos persisten en PostgreSQL
@@ -127,6 +144,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
    Dashboard de monitoreo, vista de sesiones activas, asistencia remota, override de precios, cancelación de transacciones.
 
 **Criterio de Éxito:**
+
 - Múltiples kiosks operan simultáneamente
 - Inventario se actualiza en tiempo real (menos de 100ms)
 - Pagos fallidos se manejan correctamente
@@ -159,6 +177,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
    Caché de productos en Redis, índices optimizados en PostgreSQL, connection pooling, lazy loading en frontend.
 
 **Criterio de Éxito:**
+
 - Sistema cumple estándares de seguridad básicos
 - Todas las acciones críticas están auditadas
 - Recuperación automática de fallos
@@ -191,6 +210,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
    Documentación OpenAPI/Swagger, endpoints para sistemas externos, webhooks para eventos.
 
 **Criterio de Éxito:**
+
 - Sistema escala horizontalmente
 - Eventos se procesan asíncronamente
 - Dashboard muestra métricas en tiempo real
@@ -223,6 +243,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
    Runbooks para escenarios comunes, procedimientos de incident response, planes de contingencia.
 
 **Criterio de Éxito:**
+
 - Sistema pasa pruebas de carga de 500 usuarios
 - Monitoreo configurado y funcionando
 - Pipeline CI/CD automatizado
@@ -299,42 +320,43 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 
 ### Métricas Técnicas
 
-| Métrica | Objetivo | Fase |
-|---------|----------|------|
-| Tiempo de respuesta API (p95) | < 200ms | Fase 3 |
-| Tiempo de respuesta API (p99) | < 500ms | Fase 4 |
-| Cobertura de tests | > 80% | Fase 3 |
-| Cobertura de tests | > 90% | Fase 5 |
-| Uptime del sistema | > 99.5% | Fase 5 |
-| Tiempo de recovery | < 5 min | Fase 5 |
-| Usuarios concurrentes | 500+ | Fase 5 |
+| Métrica                       | Objetivo | Fase   |
+| ----------------------------- | -------- | ------ |
+| Tiempo de respuesta API (p95) | < 200ms  | Fase 3 |
+| Tiempo de respuesta API (p99) | < 500ms  | Fase 4 |
+| Cobertura de tests            | > 80%    | Fase 3 |
+| Cobertura de tests            | > 90%    | Fase 5 |
+| Uptime del sistema            | > 99.5%  | Fase 5 |
+| Tiempo de recovery            | < 5 min  | Fase 5 |
+| Usuarios concurrentes         | 500+     | Fase 5 |
 
 ### Métricas de Negocio
 
-| Métrica | Objetivo | Fase |
-|---------|----------|------|
-| Transacciones por hora (por kiosk) | 30+ | Fase 2 |
-| Tiempo promedio de checkout | < 3 min | Fase 3 |
-| Tasa de éxito de pagos | > 95% | Fase 3 |
-| Tasa de asistencia de operador | < 5% | Fase 4 |
+| Métrica                            | Objetivo | Fase   |
+| ---------------------------------- | -------- | ------ |
+| Transacciones por hora (por kiosk) | 30+      | Fase 2 |
+| Tiempo promedio de checkout        | < 3 min  | Fase 3 |
+| Tasa de éxito de pagos             | > 95%    | Fase 3 |
+| Tasa de asistencia de operador     | < 5%     | Fase 4 |
 
 ---
 
 ## 7. Riesgos y Mitigaciones
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| Retrasos en integración de repositorios heredados | Media | Alto | Planificar buffer de 2 semanas, crear adapters tempranamente |
-| Problemas de rendimiento con Socket.io | Media | Medio | Implementar Redis adapter desde Fase 2 |
-| Complejidad de microservicios | Alta | Medio | Empezar con monolito modular, descomponer gradualmente |
-| Cambios en requisitos de pasarela de pagos | Baja | Alto | Usar abstracción de payment gateway |
-| Fallos de hardware (báscula, escáner) | Media | Medio | Implementar modo manual de respaldo |
+| Riesgo                                            | Probabilidad | Impacto | Mitigación                                                   |
+| ------------------------------------------------- | ------------ | ------- | ------------------------------------------------------------ |
+| Retrasos en integración de repositorios heredados | Media        | Alto    | Planificar buffer de 2 semanas, crear adapters tempranamente |
+| Problemas de rendimiento con Socket.io            | Media        | Medio   | Implementar Redis adapter desde Fase 2                       |
+| Complejidad de microservicios                     | Alta         | Medio   | Empezar con monolito modular, descomponer gradualmente       |
+| Cambios en requisitos de pasarela de pagos        | Baja         | Alto    | Usar abstracción de payment gateway                          |
+| Fallos de hardware (báscula, escáner)             | Media        | Medio   | Implementar modo manual de respaldo                          |
 
 ---
 
 ## 8. Checklist de Preparación para Cada Fase
 
 ### Fase 1
+
 - Repositorio creado y configurado
 - Docker Compose funcional
 - TypeScript configurado
@@ -344,6 +366,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 - CI/CD básico configurado
 
 ### Fase 2
+
 - Múltiples kiosks funcionando
 - Integración de báscula
 - Sistema de pagos simulado
@@ -352,6 +375,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 - Tests de integración completos
 
 ### Fase 3
+
 - Autenticación implementada
 - Sistema de auditoría completo
 - Tests de seguridad
@@ -360,6 +384,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 - Documentación de API
 
 ### Fase 4
+
 - Microservicios desplegados
 - Message queue funcionando
 - Promociones y descuentos
@@ -368,6 +393,7 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 - Tests de carga
 
 ### Fase 5
+
 - Property-based tests
 - Pruebas de estrés
 - Monitoreo completo
@@ -380,12 +406,14 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 ## 9. Próximos Pasos Inmediatos
 
 **Esta semana:**
+
 - Crear repositorio con estructura monorepo
 - Configurar Docker Compose con PostgreSQL y Redis
 - Inicializar proyecto NestJS y React
 - Configurar GitHub Actions básico
 
 **Próximas 2 semanas:**
+
 - Implementar API de productos
 - Crear interfaz básica de kiosk
 - Implementar carrito de compras
@@ -394,4 +422,4 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 
 ---
 
-*Este plan es un documento vivo y debe actualizarse según el progreso del equipo y cambios en requisitos. Para referencias técnicas detalladas, consultar code-snippets.md.*
+_Este plan es un documento vivo y debe actualizarse según el progreso del equipo y cambios en requisitos. Para referencias técnicas detalladas, consultar code-snippets.md._

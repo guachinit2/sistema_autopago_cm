@@ -6,11 +6,11 @@ Este documento detalla las tareas específicas para cada miembro del equipo, org
 
 ## Resumen de Asignaciones por Fase
 
-| Fase | Desarrollador Backend | Desarrollador Frontend | Desarrollador DevOps |
-|------|----------------------|------------------------|---------------------|
-| **Corto Plazo (1-6)** | Estructura backend, API productos, pagos mock | Frontend React, escaneo, carrito, UI táctil | Docker, DB, Socket.io, infraestructura |
+| Fase                     | Desarrollador Backend                                | Desarrollador Frontend                            | Desarrollador DevOps                     |
+| ------------------------ | ---------------------------------------------------- | ------------------------------------------------- | ---------------------------------------- |
+| **Corto Plazo (1-6)**    | Estructura backend, API productos, pagos mock        | Frontend React, escaneo, carrito, UI táctil       | Docker, DB, Socket.io, infraestructura   |
 | **Mediano Plazo (7-18)** | Multi-kiosk, inventario real-time, pesaje, seguridad | Dashboard operador, métricas real-time, UI pesaje | Logging, staging, health checks, backups |
-| **Largo Plazo (19-32)** | Microservicios, RabbitMQ, promociones, PBT | APIs externas, optimización, reportes | K8s, CI/CD avanzado, monitoreo, runbooks |
+| **Largo Plazo (19-32)**  | Microservicios, RabbitMQ, promociones, PBT           | APIs externas, optimización, reportes             | K8s, CI/CD avanzado, monitoreo, runbooks |
 
 ---
 
@@ -401,28 +401,33 @@ Este documento detalla las tareas específicas para cada miembro del equipo, org
 ## Métricas de Progreso por Fase
 
 ### Fase 1 (Corto Plazo)
-- Tasks completados: __ / 60
-- Porcentaje: __%
+
+- Tasks completados: \_\_ / 60
+- Porcentaje: \_\_%
 - Criterio mínimo: 80% de tasks completados
 
 ### Fase 2 (Mediano Plazo - Primera)
-- Tasks completados: __ / 60
-- Porcentaje: __%
+
+- Tasks completados: \_\_ / 60
+- Porcentaje: \_\_%
 - Criterio mínimo: 80% de tasks completados
 
 ### Fase 3 (Mediano Plazo - Segunda)
-- Tasks completados: __ / 60
-- Porcentaje: __%
+
+- Tasks completados: \_\_ / 60
+- Porcentaje: \_\_%
 - Criterio mínimo: 80% de tasks completados
 
 ### Fase 4 (Largo Plazo - Primera)
-- Tasks completados: __ / 60
-- Porcentaje: __%
+
+- Tasks completados: \_\_ / 60
+- Porcentaje: \_\_%
 - Criterio mínimo: 80% de tasks completados
 
 ### Fase 5 (Largo Plazo - Segunda)
-- Tasks completados: __ / 60
-- Porcentaje: __%
+
+- Tasks completados: \_\_ / 60
+- Porcentaje: \_\_%
 - Criterio mínimo: 80% de tasks completados
 
 ---
@@ -445,8 +450,8 @@ El sistema de pesaje de productos frescos debe ser implementado considerando los
 
 Aunque las tareas están asignadas a desarrolladores específicos, se espera colaboración entre áreas cuando sea necesario. Un desarrollador de backend puede ayudar con tareas de frontend si tiene disponibilidad, y viceversa. Lo importante es mantener el progreso general del proyecto y no permitir que una tarea bloquee a otros miembros del equipo.
 
-Las tareas marcadas con asterisco (*) son bloqueantes para otras tareas y deben tener prioridad alta. Si una tarea bloqueante no puede completarse en el tiempo estimado, el equipo debe reunirse para replanificar y ajustar el cronograma.
+Las tareas marcadas con asterisco (\*) son bloqueantes para otras tareas y deben tener prioridad alta. Si una tarea bloqueante no puede completarse en el tiempo estimado, el equipo debe reunirse para replanificar y ajustar el cronograma.
 
 ---
 
-*Este documento debe ser actualizado semanalmente con el progreso real del equipo. Las tareas completadas deben tener la fecha de completación y el nombre de quien las completó.*
+_Este documento debe ser actualizado semanalmente con el progreso real del equipo. Las tareas completadas deben tener la fecha de completación y el nombre de quien las completó._

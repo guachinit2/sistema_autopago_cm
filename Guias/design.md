@@ -218,4 +218,4 @@ El sistema debe incluir funcionalidades de calibración y mantenimiento para las
 
 ---
 
-*Este documento debe ser revisado al final de cada fase para validar el progreso y ajustar los objetivos de las fases siguientes según los aprendizajes obtenidos.*
+_Este documento debe ser revisado al final de cada fase para validar el progreso y ajustar los objetivos de las fases siguientes según los aprendizajes obtenidos._

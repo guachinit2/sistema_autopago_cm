@@ -68,6 +68,7 @@ mkdir -p apps/{frontend,backend} packages/{ui-components,utils,config} libs/{sca
 **Librería:** `html5-qrcode` (mebjas/html5-qrcode)
 
 **Instalación:**
+
 ```bash
 cd apps/frontend
 npm install html5-qrcode
@@ -107,10 +108,7 @@ export class BarcodeScanner {
     });
   }
 
-  async startCamera(
-    elementId: string,
-    onScan: (result: ScanResult) => void
-  ): Promise<void> {
+  async startCamera(elementId: string, onScan: (result: ScanResult) => void): Promise<void> {
     if (!this.scanner) {
       await this.initialize();
     }
@@ -213,6 +211,7 @@ export function ProductScanner({ onProductScanned }: { onProductScanned: (code: 
 **Librería:** `shadcn/ui` + `radix-ui/react primitives`
 
 **Instalación:**
+
 ```bash
 cd apps/frontend
 npx shadcn-ui@latest init
@@ -229,10 +228,7 @@ npm install @radix-ui/react-slot @radix-ui/react-dialog @radix-ui/react-toast
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
-  content: [
-    './src/**/*.{ts,tsx}',
-    '../../packages/**/*.{ts,tsx}',
-  ],
+  content: ['./src/**/*.{ts,tsx}', '../../packages/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -341,6 +337,7 @@ export { KioskButton, buttonVariants };
 **Librería:** `node-escpos` (node-escpos/driver)
 
 **Instalación:**
+
 ```bash
 cd apps/backend
 npm install escpos @escpos/driver usb
@@ -520,6 +517,7 @@ export class PrinterController {
 **Librería:** `typeorm` (typeorm/typeorm)
 
 **Instalación:**
+
 ```bash
 cd apps/backend
 npm install @nestjs/typeorm typeorm pg
@@ -637,6 +635,7 @@ export default registerAs('database', () => ({
 **Librería:** `mercadopago/sdk-nodejs` o `stripe`
 
 **Instalación (Mercado Pago):**
+
 ```bash
 cd apps/backend
 npm install mercadopago
@@ -820,11 +819,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: self_checkout
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -833,11 +832,11 @@ services:
     image: redis:7-alpine
     container_name: self-checkout-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -848,7 +847,7 @@ services:
       dockerfile: Dockerfile
     container_name: self-checkout-backend
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - NODE_ENV=development
       - DB_HOST=postgres
@@ -873,7 +872,7 @@ services:
       dockerfile: Dockerfile
     container_name: self-checkout-frontend
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - VITE_API_URL=http://localhost:3001
     depends_on:
@@ -891,14 +890,14 @@ volumes:
 
 ## 4. Resumen de Dependencias por Capa
 
-| Capa | Repositorio/Librería | Propósito |
-|------|---------------------|-----------|
-| Escáner | html5-qrcode | Lectura de códigos de barras con cámara |
-| UI | shadcn/ui + radix-ui | Componentes táctiles accesibles |
-| Impresora | node-escpos | Control de impresora térmica |
-| Base de Datos | typeorm + pg | ORM para PostgreSQL |
-| Pagos | mercadopago/sdk-nodejs | Procesamiento de pagos |
-| Tiempo Real | socket.io | Comunicación bidireccional |
+| Capa          | Repositorio/Librería   | Propósito                               |
+| ------------- | ---------------------- | --------------------------------------- |
+| Escáner       | html5-qrcode           | Lectura de códigos de barras con cámara |
+| UI            | shadcn/ui + radix-ui   | Componentes táctiles accesibles         |
+| Impresora     | node-escpos            | Control de impresora térmica            |
+| Base de Datos | typeorm + pg           | ORM para PostgreSQL                     |
+| Pagos         | mercadopago/sdk-nodejs | Procesamiento de pagos                  |
+| Tiempo Real   | socket.io              | Comunicación bidireccional              |
 
 ---
 
@@ -929,4 +928,4 @@ curl http://localhost:3000
 
 ---
 
-*Esta guía debe complementarse con la documentación específica de cada librería para configuraciones avanzadas.*
+_Esta guía debe complementarse con la documentación específica de cada librería para configuraciones avanzadas._

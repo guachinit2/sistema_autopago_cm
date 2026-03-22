@@ -2,18 +2,18 @@
 
 ## Estado de Implementación
 
-| Fase | Descripción | Estado |
-|------|-------------|--------|
-| 1 | Estructura de carpetas del proyecto | ✅ Completado |
-| 2 | Arquitectura de contenedores (docker-compose, Dockerfiles) | ✅ Completado |
-| 3 | Configuración de Nginx | ✅ Completado |
-| 4 | Scripts de infraestructura | ⚠️ Parcial |
-| 4.1 | Script de inicialización (setup.sh) | ⏳ Pendiente |
-| 4.2 | Script de migraciones (migrate.sh) | ⏳ Pendiente |
-| 4.3 | Script de backup (backup.sh) | ⏳ Pendiente |
-| 5 | Pipeline de CI/CD (GitHub Actions) | ⏳ Pendiente |
-| 6 | Checklist y tareas semanales | ⏳ Pendiente |
-| 7 | Comandos de uso rápido | 📖 Documentación |
+| Fase | Descripción                                                | Estado           |
+| ---- | ---------------------------------------------------------- | ---------------- |
+| 1    | Estructura de carpetas del proyecto                        | ✅ Completado    |
+| 2    | Arquitectura de contenedores (docker-compose, Dockerfiles) | ✅ Completado    |
+| 3    | Configuración de Nginx                                     | ✅ Completado    |
+| 4    | Scripts de infraestructura                                 | ⚠️ Parcial       |
+| 4.1  | Script de inicialización (setup.sh)                        | ⏳ Pendiente     |
+| 4.2  | Script de migraciones (migrate.sh)                         | ⏳ Pendiente     |
+| 4.3  | Script de backup (backup.sh)                               | ⏳ Pendiente     |
+| 5    | Pipeline de CI/CD (GitHub Actions)                         | ⏳ Pendiente     |
+| 6    | Checklist y tareas semanales                               | ⏳ Pendiente     |
+| 7    | Comandos de uso rápido                                     | 📖 Documentación |
 
 ---
 
@@ -108,9 +108,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init.sh
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -125,9 +125,9 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - '6379:6379'
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -146,7 +146,7 @@ services:
       - REDIS_PORT=6379
       - PORT=3002
     ports:
-      - "3002:3002"
+      - '3002:3002'
     depends_on:
       redis:
         condition: service_healthy
@@ -170,7 +170,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-dev-secret-key}
       - PORT=3001
     ports:
-      - "3001:3001"
+      - '3001:3001'
     depends_on:
       postgres:
         condition: service_healthy
@@ -192,7 +192,7 @@ services:
       - VITE_API_URL=http://localhost:3001
       - VITE_SOCKET_URL=http://localhost:3002
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - backend
     networks:
@@ -206,8 +206,8 @@ services:
     image: nginx:alpine
     container_name: autopago-nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
       - ./infrastructure/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infrastructure/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
@@ -230,6 +230,7 @@ networks:
 ### 2.2 Dockerfiles
 
 **Backend Dockerfile:**
+
 ```dockerfile
 # apps/backend/Dockerfile
 FROM node:20-alpine AS builder
@@ -257,6 +258,7 @@ CMD ["node", "dist/main.js"]
 ```
 
 **Frontend Dockerfile:**
+
 ```dockerfile
 # apps/frontend/Dockerfile
 FROM node:20-alpine AS builder
@@ -280,6 +282,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 **Socket Server Dockerfile:**
+
 ```dockerfile
 # apps/backend/Dockerfile.socket
 FROM node:20-alpine
@@ -509,16 +512,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run linter
         run: npm run lint
 
@@ -549,22 +552,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: npm run test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/autopago_test
           REDIS_URL: redis://localhost:6379
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
 
@@ -573,17 +576,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
@@ -592,7 +595,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
@@ -632,16 +635,18 @@ jobs:
 ## 6. Checklist de Tareas DevOps
 
 ### Semana 1-2: Infraestructura Base ✅
+
 - [x] Crear estructura de directorios del proyecto
 - [x] Configurar monorepo con Turborepo
 - [x, 4.2 y 4.3
-] Crear docker-compose.yml base
+  ] Crear docker-compose.yml base
 - [x] Configurar PostgreSQL con Docker
 - [x] Configurar Redis con Docker
 - [x] Crear script setup.sh
 - [ ] Documentar requisitos de instalación
 
 ### Semana 3-4: Backend y Frontend ✅
+
 - [x] Crear Dockerfile para backend
 - [x] Crear Dockerfile para frontend
 - [x] Configurar nginx como reverse proxy
@@ -651,6 +656,7 @@ jobs:
 - [ ] Probar entorno completo local
 
 ### Semana 5-6: CI/CD y Calidad
+
 - [ ] Configurar GitHub Actions
 - [ ] Implementar pipeline de lint
 - [ ] Implementar pipeline de tests
@@ -660,6 +666,7 @@ jobs:
 - [ ] Documentar pipeline
 
 ### Semana 7-12: Monitoreo y Producción
+
 - [ ] Configurar health checks
 - [ ] Configurar logging estructurado
 - [ ] Configurar ambiente de staging
@@ -669,6 +676,7 @@ jobs:
 - [ ] Documentar procedimientos de deployment
 
 ### Semana 13-18: Kubernetes (Opcional)
+
 - [ ] Crear Helm charts
 - [ ] Configurar K8s manifests
 - [ ] Configurar auto-scaling
@@ -714,4 +722,4 @@ docker stats
 
 ---
 
-*Este documento debe ser actualizado conforme avance el proyecto y se agreguen nuevas configuraciones de infraestructura.*
+_Este documento debe ser actualizado conforme avance el proyecto y se agreguen nuevas configuraciones de infraestructura._
