@@ -13,17 +13,18 @@ Sistema de autopago para mercados, inspirado en el modelo de Farmatodo.
 ## Instalación
 
 1. Clonar el repositorio
-2. Copiar `.env.example` a `.env` y configurar variables
+2. Copiar `config/env.example` a `.env` y configurar variables
 3. Ejecutar `./scripts/setup.sh`
 
 ## Uso
 
 ```bash
 # Levantar servicios
-docker-compose up -d
+npm run docker:up
+# o: docker compose -f docker/docker-compose.yml up -d
 
 # Ver logs
-docker-compose logs -f
+docker compose -f docker/docker-compose.yml logs -f
 ```
 
 ## Servicios
@@ -37,12 +38,13 @@ docker-compose logs -f
 
 ```
 sistema_autopago_cm/
-├── apps/
-│   ├── backend/     # API NestJS
-│   └── frontend/    # React
-├── packages/        # Paquetes compartidos
-├── libs/            # Librerías de integración
+├── apps/            # Backend API, Frontend React
+├── config/          # ESLint, Prettier, TypeScript, env.example
+├── docker/          # docker-compose.yml y variantes
+├── Guias/           # Documentación del proyecto
 ├── infrastructure/  # Docker, K8s, Terraform
+├── libs/            # Librerías de integración
+├── packages/        # Paquetes compartidos
 └── scripts/         # Scripts de utilidad
 ```
 

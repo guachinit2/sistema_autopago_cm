@@ -1,5 +1,5 @@
 # docker-compose.prod.yml - Imágenes de producción
-# Uso: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Uso: docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
 
 services:
   backend:

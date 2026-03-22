@@ -693,25 +693,27 @@ jobs:
 ./scripts/setup.sh
 
 # Levantar servicios
-docker-compose up -d
+npm run docker:up
+# o: docker compose -f docker/docker-compose.yml up -d
 
 # Ver logs
-docker-compose logs -f
+docker compose -f docker/docker-compose.yml logs -f
 
 # Detener servicios
-docker-compose down
+npm run docker:down
+# o: docker compose -f docker/docker-compose.yml down
 
 # Detener y eliminar volúmenes
-docker-compose down -v
+docker compose -f docker/docker-compose.yml down -v
 
 # Reiniciar un servicio
-docker-compose restart backend
+docker compose -f docker/docker-compose.yml restart backend
 
 # Ver estado de servicios
-docker-compose ps
+docker compose -f docker/docker-compose.yml ps
 
 # Ejecutar comandos en contenedor
-docker-compose exec backend sh
+docker compose -f docker/docker-compose.yml exec backend sh
 
 # Backup de base de datos
 ./scripts/backup.sh

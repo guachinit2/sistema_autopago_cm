@@ -29,13 +29,13 @@ mkdir -p data/postgres data/redis logs backups
 # Copiar archivo de entorno si no existe
 if [ ! -f .env ]; then
     echo "📄 Creando archivo .env..."
-    cp .env.example .env
+    cp config/env.example .env
     echo "   ⚠️  Revisa y edita .env con tus valores"
 fi
 
 # Levantar servicios base
 echo "🐳 Levantando servicios base (PostgreSQL, Redis)..."
-$DOCKER_COMPOSE up -d postgres redis
+$DOCKER_COMPOSE -f docker/docker-compose.yml up -d postgres redis
 
 # Esperar a que PostgreSQL esté listo
 echo "⏳ Esperando a PostgreSQL..."
@@ -58,7 +58,7 @@ echo "🌱 Ejecutando seed de datos..."
 
 # Levantar todos los servicios
 echo "🐳 Levantando todos los servicios..."
-$DOCKER_COMPOSE up -d
+$DOCKER_COMPOSE -f docker/docker-compose.yml up -d
 
 echo ""
 echo "✅ Entorno listo!"
