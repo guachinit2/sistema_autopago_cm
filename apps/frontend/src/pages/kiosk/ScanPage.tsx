@@ -1,30 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCartStore } from '../../stores/useCartStore';
-import type { Product } from '../../types';
 import { playScanBeep } from '../../utils/beep';
 import { BarcodeCamera } from '../../components/kiosk/BarcodeCamera';
-
-// Productos mock para pruebas (sin API)
-const MOCK_PRODUCTS: Record<string, { name: string; price: number }> = {
-  '12345678': { name: 'Producto prueba 1', price: 2.5 },
-  '87654321': { name: 'Producto prueba 2', price: 5.99 },
-  '11111111': { name: 'Leche 1L', price: 1.2 },
-  '22222222': { name: 'Pan integral', price: 0.85 },
-};
-
-function resolveProduct(code: string): Product {
-  const match = MOCK_PRODUCTS[code];
-  const name = match?.name ?? `Producto ${code.slice(0, 6)}`;
-  const price = match?.price ?? Math.random() * 10 + 0.5;
-  return {
-    id: code,
-    sku: code,
-    barcode: code,
-    name,
-    price,
-  };
-}
+import { getProductByBarcode } from '../../services/productService';
 
 export function ScanPage() {
   const navigate = useNavigate();
@@ -36,19 +15,27 @@ export function ScanPage() {
   const scanCooldownRef = useRef(false);
 
   const processCode = useCallback(
-    (code: string) => {
+    async (code: string) => {
       const trimmed = code.trim();
       if (trimmed.length >= 8) {
-        const product = resolveProduct(trimmed);
-        addItem(product);
-        setScanStatus('valid');
-        playScanBeep();
-        if (navigator.vibrate) navigator.vibrate(200);
-        scanCooldownRef.current = true;
-        setTimeout(() => {
-          scanCooldownRef.current = false;
-          setScanStatus('idle');
-        }, 800);
+        try {
+          const product = await getProductByBarcode(trimmed);
+          if (product) {
+            addItem(product);
+            setScanStatus('valid');
+            playScanBeep();
+            if (navigator.vibrate) navigator.vibrate(200);
+            scanCooldownRef.current = true;
+            setTimeout(() => {
+              scanCooldownRef.current = false;
+              setScanStatus('idle');
+            }, 800);
+          } else {
+            setScanStatus('invalid');
+          }
+        } catch {
+          setScanStatus('invalid');
+        }
       } else if (trimmed.length > 0) {
         setScanStatus('partial');
       } else {

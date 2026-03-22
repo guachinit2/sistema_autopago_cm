@@ -6,6 +6,23 @@ Este documento detalla el plan de desarrollo del frontend para el sistema de aut
 
 ---
 
+## Estado del desarrollo (actualizado)
+
+| Fase | Pantalla | Estado |
+|------|----------|--------|
+| **Fase 1** | **4.1** Pantalla Principal (HomePage) | ✅ Completado |
+| | **4.2** Pantalla de Escaneo (ScanPage) | ✅ Completado |
+| | **4.3** Pantalla del Carrito (CartPage) | ✅ Completado |
+| | **4.4** Pantalla de Selección de Pago | 🔲 Siguiente |
+| | **4.5** Pantalla de Confirmación de Pago | 🔲 Pendiente |
+| | **4.6** Pantalla de Recibo Digital | 🔲 Pendiente |
+| **Fase 2** | 4.7–4.10 (Pesaje, Operador) | 🔲 Pendiente |
+| **Fase 3** | 4.11–4.15 (Admin, Reportes) | 🔲 Pendiente |
+
+**Fase actual:** 4.4 — Pantalla de Selección de Pago
+
+---
+
 ## 1. Stack Tecnológico
 
 ### 1.1 Core
