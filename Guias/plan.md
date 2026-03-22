@@ -88,15 +88,15 @@ Un kiosk funcional con escaneo de productos, carrito de compras básico, persist
 
    **Estado - Configuración del Entorno:**
 
-   | Item                                  | Estado       | Notas                                                               |
-   | ------------------------------------- | ------------ | ------------------------------------------------------------------- |
-   | Estructura monorepo                   | ✅ Hecho     | apps/, packages/, libs/ con Turborepo y workspaces                  |
-   | Docker Compose con PostgreSQL y Redis | ✅ Hecho     | docker-compose.yml con postgres:15-alpine y redis:7-alpine          |
-   | TypeScript configurado                | ✅ Hecho     | tsconfig.json en raíz, backend y frontend                           |
-   | ESLint                                | ✅ Hecho    | Configurado con TypeScript y React, eslint-config-prettier          |
-   | Prettier                              | ✅ Hecho    | Configurado con .prettierrc, integrado con ESLint                    |
-   | Husky para git hooks                  | ⏳ Pendiente | No instalado                                                        |
-   | CI/CD básico en GitHub Actions        | ⏳ Pendiente | No existe `.github/workflows/`                                      |
+   | Item                                  | Estado   | Notas                                                      |
+   | ------------------------------------- | -------- | ---------------------------------------------------------- |
+   | Estructura monorepo                   | ✅ Hecho | apps/, packages/, libs/ con Turborepo y workspaces         |
+   | Docker Compose con PostgreSQL y Redis | ✅ Hecho | docker-compose.yml con postgres:15-alpine y redis:7-alpine |
+   | TypeScript configurado                | ✅ Hecho | tsconfig.json en raíz, backend y frontend                  |
+   | ESLint                                | ✅ Hecho | Configurado con TypeScript y React, eslint-config-prettier |
+   | Prettier                              | ✅ Hecho | Configurado con .prettierrc, integrado con ESLint          |
+   | Husky para git hooks                  | ✅ Hecho | pre-commit: lint + format:check                            |
+   | CI/CD básico en GitHub Actions        | ✅ Hecho | .github/workflows/ci.yml: lint, test, build                |
 
 2. **API de Productos:**
    Búsqueda por código de barras, consulta por ID, gestión de catálogo con tiempos de respuesta menores a 200ms.
