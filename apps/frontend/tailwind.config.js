@@ -4,7 +4,20 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        background: '#f9f9f9',
+        'on-background': '#1a1c1c',
+        primary: '#b5000b',
+        'primary-container': '#e30613',
+        'on-primary': '#ffffff',
+        secondary: '#3a5f94',
+        'on-secondary': '#ffffff',
+        'surface-container-low': '#f3f3f3',
+        'surface-container-high': '#e8e8e8',
+        'outline-variant': '#e9bcb6',
+        'on-surface-variant': '#5e3f3b',
       },
     },
   },
