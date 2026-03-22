@@ -1,5 +1,4 @@
 # Override de docker-compose para desarrollo local
-# Añade comandos y configuraciones específicas para desarrollo
 
 services:
   backend:

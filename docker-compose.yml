@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-autopago}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     ports:
       - "5432:5432"
     healthcheck:
@@ -40,7 +40,7 @@ services:
   # Servidor de tiempo real
   socket-server:
     build:
-      context: ../apps/backend
+      context: ./apps/backend
       dockerfile: Dockerfile.socket
       target: development
     container_name: autopago-socket
@@ -57,13 +57,13 @@ services:
     networks:
       - autopago-network
     volumes:
-      - ../apps/backend:/app
+      - ./apps/backend:/app
       - /app/node_modules
 
   # Backend API
   backend:
     build:
-      context: ../apps/backend
+      context: ./apps/backend
       dockerfile: Dockerfile
       target: development
     container_name: autopago-backend
@@ -84,13 +84,13 @@ services:
     networks:
       - autopago-network
     volumes:
-      - ../apps/backend:/app
+      - ./apps/backend:/app
       - /app/node_modules
 
   # Frontend
   frontend:
     build:
-      context: ../apps/frontend
+      context: ./apps/frontend
       dockerfile: Dockerfile
       target: development
     container_name: autopago-frontend
@@ -104,7 +104,7 @@ services:
     networks:
       - autopago-network
     volumes:
-      - ../apps/frontend:/app
+      - ./apps/frontend:/app
       - /app/node_modules
 
   # Reverse Proxy
@@ -115,7 +115,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ../infrastructure/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - backend
       - frontend

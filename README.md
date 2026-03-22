@@ -21,10 +21,10 @@ Sistema de autopago para mercados, inspirado en el modelo de Farmatodo.
 ```bash
 # Levantar servicios
 npm run docker:up
-# o: docker compose -f docker/docker-compose.yml up -d
+# o: docker compose up -d
 
 # Ver logs
-docker compose -f docker/docker-compose.yml logs -f
+docker compose logs -f
 ```
 
 ## Servicios
@@ -40,7 +40,7 @@ docker compose -f docker/docker-compose.yml logs -f
 sistema_autopago_cm/
 ├── apps/            # Backend API, Frontend React
 ├── config/          # ESLint, Prettier, TypeScript, env.example
-├── docker/          # docker-compose.yml y variantes
+├── docker/          # README de Docker (compose en raíz)
 ├── Guias/           # Documentación del proyecto
 ├── infrastructure/  # Docker, K8s, Terraform
 ├── libs/            # Librerías de integración
