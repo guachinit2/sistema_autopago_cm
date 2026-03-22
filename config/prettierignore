@@ -6,5 +6,5 @@ coverage
 pnpm-lock.yaml
 package-lock.json
 
-# Documentación - formato libre (evita fallos en pre-commit)
-Guias/
+# Solo formatear código, no documentación (.md)
+*.md
