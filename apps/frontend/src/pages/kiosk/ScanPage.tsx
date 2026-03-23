@@ -22,8 +22,13 @@ function CartSidebarItem({
   onUpdateQuantity: (itemId: string, quantity: number) => void;
   onRemove: (itemId: string) => void;
 }) {
-  const lineTotal = item.price * item.quantity;
-  const detail = item.quantity > 1 ? `${item.quantity} × $${item.price.toFixed(2)}` : `$${item.price.toFixed(2)} c/u`;
+  const amt = item.weightKg ?? item.quantity;
+  const lineTotal = item.price * amt;
+  const detail = item.product.weightBased
+    ? `${amt} kg × $${item.price.toFixed(2)}`
+    : item.quantity > 1
+      ? `${item.quantity} × $${item.price.toFixed(2)}`
+      : `$${item.price.toFixed(2)} c/u`;
   return (
     <div className="bg-white p-4 rounded-xl flex items-center gap-4 shadow-sm border border-[#e8e8e8]">
       <div className="w-16 h-16 rounded-lg bg-[#f3f3f3] flex items-center justify-center shrink-0 overflow-hidden">

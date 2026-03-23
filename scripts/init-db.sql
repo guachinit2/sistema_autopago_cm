@@ -31,6 +31,7 @@ ON CONFLICT (barcode) DO NOTHING;
 CREATE TABLE IF NOT EXISTS carts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   kiosk_id VARCHAR(50),
+  document_id VARCHAR(20),
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -41,7 +42,9 @@ CREATE TABLE IF NOT EXISTS cart_items (
   cart_id UUID NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
   product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   quantity INTEGER NOT NULL DEFAULT 1,
+  weight_kg DECIMAL(10,3),
   unit_price DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(cart_id, product_id)
 );
 
@@ -50,6 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_cart_items_cart_id ON cart_items(cart_id);
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   cart_id UUID NOT NULL REFERENCES carts(id),
+  document_id VARCHAR(20),
   subtotal DECIMAL(10,2) NOT NULL,
   tax DECIMAL(10,2) NOT NULL,
   total DECIMAL(10,2) NOT NULL,
@@ -82,3 +86,11 @@ INSERT INTO payment_methods (code, name) VALUES
   ('EFECTIVO', 'Efectivo'),
   ('PAGO_MOVIL', 'Pago móvil')
 ON CONFLICT (code) DO NOTHING;
+
+-- Migración 3.2: document_id para sesiones existentes
+ALTER TABLE carts ADD COLUMN IF NOT EXISTS document_id VARCHAR(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS document_id VARCHAR(20);
+
+-- Migración 3.3: weight_kg y created_at en cart_items
+ALTER TABLE cart_items ADD COLUMN IF NOT EXISTS weight_kg DECIMAL(10,3);
+ALTER TABLE cart_items ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();

@@ -9,9 +9,11 @@ import type { CartItem } from '../../types';
 const AUTO_NAVIGATE_SEC = 60;
 
 function ReceiptItem({ item }: { item: CartItem }) {
-  const lineTotal = item.price * item.quantity;
-  const detail =
-    item.quantity > 1
+  const amt = item.weightKg ?? item.quantity;
+  const lineTotal = item.price * amt;
+  const detail = item.product.weightBased
+    ? `${amt} kg × $${item.price.toFixed(2)}`
+    : item.quantity > 1
       ? `${item.quantity} × $${item.price.toFixed(2)}`
       : `$${item.price.toFixed(2)}`;
 

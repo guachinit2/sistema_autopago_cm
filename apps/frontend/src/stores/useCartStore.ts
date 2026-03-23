@@ -35,7 +35,10 @@ export const useCartStore = create<CartStore>((set, get) => ({
             i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
           )
         : [...state.items, { id: crypto.randomUUID(), product, quantity, price: product.price }];
-      const subtotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      const subtotal = newItems.reduce(
+        (sum, i) => sum + i.price * (i.weightKg ?? i.quantity),
+        0
+      );
       const tax = subtotal * 0.16;
       return { items: newItems, subtotal, tax, total: subtotal + tax };
     });
@@ -43,23 +46,23 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   addItemFromApi: (item) => {
     set((state) => {
+      const newItem: CartItem = {
+        id: item.id,
+        product: item.product,
+        quantity: item.quantity,
+        weightKg: item.weightKg ?? undefined,
+        price: item.unitPrice,
+      };
       const existing = state.items.find((i) => i.product.id === item.product.id);
       const newItems = existing
         ? state.items.map((i) =>
-            i.product.id === item.product.id
-              ? { ...i, id: item.id, quantity: item.quantity, price: item.unitPrice }
-              : i
+            i.product.id === item.product.id ? { ...i, ...newItem } : i
           )
-        : [
-            ...state.items,
-            {
-              id: item.id,
-              product: item.product,
-              quantity: item.quantity,
-              price: item.unitPrice,
-            },
-          ];
-      const subtotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        : [...state.items, newItem];
+      const subtotal = newItems.reduce(
+        (sum, i) => sum + i.price * (i.weightKg ?? i.quantity),
+        0
+      );
       const tax = subtotal * 0.16;
       return { items: newItems, subtotal, tax, total: subtotal + tax };
     });
@@ -70,9 +73,13 @@ export const useCartStore = create<CartStore>((set, get) => ({
       id: i.id,
       product: i.product,
       quantity: i.quantity,
+      weightKg: i.weightKg ?? undefined,
       price: i.unitPrice,
     }));
-    const subtotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const subtotal = newItems.reduce(
+      (sum, i) => sum + i.price * (i.weightKg ?? i.quantity),
+      0
+    );
     const tax = subtotal * 0.16;
     set({ items: newItems, subtotal, tax, total: subtotal + tax });
   },
@@ -80,7 +87,10 @@ export const useCartStore = create<CartStore>((set, get) => ({
   removeItem: (itemId) => {
     set((state) => {
       const newItems = state.items.filter((i) => i.id !== itemId);
-      const subtotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      const subtotal = newItems.reduce(
+        (sum, i) => sum + i.price * (i.weightKg ?? i.quantity),
+        0
+      );
       const tax = subtotal * 0.16;
       return { items: newItems, subtotal, tax, total: subtotal + tax };
     });
@@ -92,8 +102,13 @@ export const useCartStore = create<CartStore>((set, get) => ({
       return;
     }
     set((state) => {
-      const newItems = state.items.map((i) => (i.id === itemId ? { ...i, quantity } : i));
-      const subtotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      const newItems = state.items.map((i) =>
+        i.id === itemId ? { ...i, quantity, weightKg: undefined } : i
+      );
+      const subtotal = newItems.reduce(
+        (sum, i) => sum + i.price * (i.weightKg ?? i.quantity),
+        0
+      );
       const tax = subtotal * 0.16;
       return { items: newItems, subtotal, tax, total: subtotal + tax };
     });

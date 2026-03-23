@@ -53,7 +53,7 @@ export function IdInputPage() {
     setError(null);
     try {
       playScanBeep();
-      const { id: cartId } = await createCart();
+      const { id: cartId } = await createCart(documentId);
       clearCart();
       startSession(cartId, documentId);
       navigate('/kiosk/scan');

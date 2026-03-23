@@ -6,6 +6,7 @@ const router = Router();
 interface CartRow {
   id: string;
   kiosk_id: string | null;
+  document_id: string | null;
   status: string;
 }
 
@@ -14,7 +15,9 @@ interface CartItemRow {
   cart_id: string;
   product_id: string;
   quantity: number;
+  weight_kg: string | null;
   unit_price: string;
+  created_at: string | null;
 }
 
 interface ProductRow {
@@ -28,10 +31,13 @@ interface ProductRow {
   weight_based: boolean;
 }
 
-router.post('/', async (_req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
+  const { documentId } = req.body as { documentId?: string };
+  const docId = typeof documentId === 'string' && documentId.trim() ? documentId.trim() : null;
   try {
     const result = await pool.query<CartRow>(
-      `INSERT INTO carts (status) VALUES ('active') RETURNING id, kiosk_id, status`
+      `INSERT INTO carts (status, document_id) VALUES ('active', $1) RETURNING id, kiosk_id, document_id, status`,
+      [docId]
     );
     const cart = result.rows[0];
     res.status(201).json({ id: cart.id, status: cart.status });
@@ -44,9 +50,10 @@ router.post('/', async (_req: Request, res: Response) => {
 router.get('/:cartId', async (req: Request, res: Response) => {
   const { cartId } = req.params;
   try {
-    const cartResult = await pool.query<CartRow>('SELECT id, kiosk_id, status FROM carts WHERE id = $1', [
-      cartId,
-    ]);
+    const cartResult = await pool.query<CartRow>(
+      'SELECT id, kiosk_id, document_id, status FROM carts WHERE id = $1',
+      [cartId]
+    );
     if (cartResult.rows.length === 0) {
       res.status(404).json({ error: 'Cart not found' });
       return;
@@ -57,7 +64,7 @@ router.get('/:cartId', async (req: Request, res: Response) => {
       return;
     }
     const itemsResult = await pool.query<CartItemRow & ProductRow>(
-      `SELECT ci.id, ci.cart_id, ci.product_id, ci.quantity, ci.unit_price,
+      `SELECT ci.id, ci.cart_id, ci.product_id, ci.quantity, ci.weight_kg, ci.unit_price, ci.created_at,
               p.barcode, p.sku, p.name, p.price, p.category, p.image_url, p.weight_based
        FROM cart_items ci
        JOIN products p ON p.id = ci.product_id
@@ -68,6 +75,7 @@ router.get('/:cartId', async (req: Request, res: Response) => {
       id: row.id,
       productId: row.product_id,
       quantity: row.quantity,
+      weightKg: row.weight_kg != null ? parseFloat(row.weight_kg) : null,
       unitPrice: parseFloat(row.unit_price),
       product: {
         id: row.product_id,
@@ -80,7 +88,7 @@ router.get('/:cartId', async (req: Request, res: Response) => {
         weightBased: row.weight_based,
       },
     }));
-    res.json({ id: cart.id, status: cart.status, items });
+    res.json({ id: cart.id, status: cart.status, documentId: cart.document_id, items });
   } catch (err) {
     console.error('Error fetching cart:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -89,12 +97,17 @@ router.get('/:cartId', async (req: Request, res: Response) => {
 
 router.post('/:cartId/items', async (req: Request, res: Response) => {
   const { cartId } = req.params;
-  const { productId, quantity = 1 } = req.body as { productId?: string; quantity?: number };
+  const { productId, quantity = 1, weightKg } = req.body as {
+    productId?: string;
+    quantity?: number;
+    weightKg?: number;
+  };
   if (!productId) {
     res.status(400).json({ error: 'productId is required' });
     return;
   }
-  const qty = Math.max(1, Math.floor(quantity));
+  const qty = weightKg != null && weightKg > 0 ? 1 : Math.max(1, Math.floor(quantity));
+  const wKg = weightKg != null && weightKg > 0 ? Math.round(weightKg * 1000) / 1000 : null;
 
   try {
     const cartResult = await pool.query('SELECT id, status FROM carts WHERE id = $1', [cartId]);
@@ -115,15 +128,18 @@ router.post('/:cartId/items', async (req: Request, res: Response) => {
     const unitPrice = parseFloat(priceResult.rows[0].price);
 
     await pool.query(
-      `INSERT INTO cart_items (cart_id, product_id, quantity, unit_price)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO cart_items (cart_id, product_id, quantity, weight_kg, unit_price)
+       VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (cart_id, product_id)
-       DO UPDATE SET quantity = cart_items.quantity + $3, unit_price = $4`,
-      [cartId, productId, qty, unitPrice]
+       DO UPDATE SET quantity = CASE WHEN $4 IS NOT NULL THEN 1 ELSE cart_items.quantity + $3 END,
+                     weight_kg = COALESCE($4, cart_items.weight_kg),
+                     unit_price = $5`,
+      [cartId, productId, qty, wKg, unitPrice]
     );
 
     const row = await pool.query<CartItemRow & ProductRow>(
-      `SELECT ci.id, ci.quantity, ci.unit_price, p.id as product_id, p.barcode, p.sku, p.name, p.price, p.category, p.image_url, p.weight_based
+      `SELECT ci.id, ci.quantity, ci.weight_kg, ci.unit_price, ci.created_at,
+              p.id as product_id, p.barcode, p.sku, p.name, p.price, p.category, p.image_url, p.weight_based
        FROM cart_items ci
        JOIN products p ON p.id = ci.product_id
        WHERE ci.cart_id = $1 AND ci.product_id = $2`,
@@ -134,6 +150,7 @@ router.post('/:cartId/items', async (req: Request, res: Response) => {
     res.status(201).json({
       id: r.id,
       quantity: r.quantity,
+      weightKg: r.weight_kg != null ? parseFloat(r.weight_kg) : null,
       unitPrice: parseFloat(r.unit_price),
       product: {
         id: r.product_id,
@@ -154,9 +171,13 @@ router.post('/:cartId/items', async (req: Request, res: Response) => {
 
 router.patch('/:cartId/items/:itemId', async (req: Request, res: Response) => {
   const { cartId, itemId } = req.params;
-  const { quantity } = req.body as { quantity?: number };
-  if (quantity === undefined || quantity < 0) {
-    res.status(400).json({ error: 'quantity must be a non-negative number' });
+  const { quantity, weightKg } = req.body as { quantity?: number; weightKg?: number };
+  if (quantity !== undefined && quantity < 0) {
+    res.status(400).json({ error: 'quantity must be non-negative' });
+    return;
+  }
+  if (weightKg !== undefined && weightKg < 0) {
+    res.status(400).json({ error: 'weightKg must be non-negative' });
     return;
   }
 
@@ -167,9 +188,28 @@ router.patch('/:cartId/items/:itemId', async (req: Request, res: Response) => {
       return;
     }
 
+    const qty = quantity !== undefined ? Math.floor(quantity) : undefined;
+    const wKg = weightKg != null && weightKg >= 0 ? Math.round(weightKg * 1000) / 1000 : undefined;
+
+    const setClauses: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
+    if (qty !== undefined) {
+      setClauses.push(`quantity = $${paramIndex++}`);
+      values.push(qty);
+    }
+    if (wKg !== undefined) {
+      setClauses.push(`weight_kg = $${paramIndex++}`);
+      values.push(wKg);
+    }
+    if (setClauses.length === 0) {
+      res.status(400).json({ error: 'quantity or weightKg is required' });
+      return;
+    }
+    values.push(itemId, cartId);
     const updateResult = await pool.query(
-      'UPDATE cart_items SET quantity = $1 WHERE id = $2 AND cart_id = $3 RETURNING id',
-      [Math.floor(quantity), itemId, cartId]
+      `UPDATE cart_items SET ${setClauses.join(', ')} WHERE id = $${paramIndex++} AND cart_id = $${paramIndex} RETURNING id`,
+      values
     );
 
     if (updateResult.rows.length === 0) {
@@ -178,7 +218,8 @@ router.patch('/:cartId/items/:itemId', async (req: Request, res: Response) => {
     }
 
     const row = await pool.query<CartItemRow & ProductRow>(
-      `SELECT ci.id, ci.quantity, ci.unit_price, p.id as product_id, p.barcode, p.sku, p.name, p.price, p.category, p.image_url, p.weight_based
+      `SELECT ci.id, ci.quantity, ci.weight_kg, ci.unit_price, ci.created_at,
+              p.id as product_id, p.barcode, p.sku, p.name, p.price, p.category, p.image_url, p.weight_based
        FROM cart_items ci
        JOIN products p ON p.id = ci.product_id
        WHERE ci.id = $1`,
@@ -188,6 +229,7 @@ router.patch('/:cartId/items/:itemId', async (req: Request, res: Response) => {
     res.json({
       id: r.id,
       quantity: r.quantity,
+      weightKg: r.weight_kg != null ? parseFloat(r.weight_kg) : null,
       unitPrice: parseFloat(r.unit_price),
       product: {
         id: r.product_id,

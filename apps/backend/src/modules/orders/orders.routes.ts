@@ -17,7 +17,7 @@ router.post('/', async (req: Request, res: Response) => {
       await client.query('BEGIN');
 
       const cartResult = await client.query(
-        'SELECT id, status FROM carts WHERE id = $1 FOR UPDATE',
+        'SELECT id, status, document_id FROM carts WHERE id = $1 FOR UPDATE',
         [cartId]
       );
       if (cartResult.rows.length === 0) {
@@ -32,22 +32,28 @@ router.post('/', async (req: Request, res: Response) => {
       }
 
       const itemsResult = await client.query(
-        'SELECT quantity, unit_price FROM cart_items WHERE cart_id = $1',
+        'SELECT quantity, weight_kg, unit_price FROM cart_items WHERE cart_id = $1',
         [cartId]
       );
       const items = itemsResult.rows;
       let subtotal = 0;
       for (const item of items) {
-        subtotal += parseFloat(item.unit_price) * item.quantity;
+        const unitPrice = parseFloat(item.unit_price);
+        const weightKg = item.weight_kg != null ? parseFloat(item.weight_kg) : null;
+        const qty = item.quantity;
+        const lineTotal = weightKg != null ? weightKg * unitPrice : qty * unitPrice;
+        subtotal += lineTotal;
       }
       const tax = Math.round(subtotal * 0.16 * 100) / 100;
       const total = Math.round((subtotal + tax) * 100) / 100;
 
+      const documentId = cartResult.rows[0].document_id || null;
+
       const orderResult = await client.query(
-        `INSERT INTO orders (cart_id, subtotal, tax, total, status)
-         VALUES ($1, $2, $3, $4, 'pending')
-         RETURNING id, cart_id, subtotal, tax, total, status, created_at`,
-        [cartId, subtotal, tax, total]
+        `INSERT INTO orders (cart_id, document_id, subtotal, tax, total, status)
+         VALUES ($1, $2, $3, $4, $5, 'pending')
+         RETURNING id, cart_id, document_id, subtotal, tax, total, status, created_at`,
+        [cartId, documentId, subtotal, tax, total]
       );
       const order = orderResult.rows[0];
 

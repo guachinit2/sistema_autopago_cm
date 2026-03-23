@@ -15,12 +15,13 @@ interface ConfirmLocationState {
 }
 
 function CartSummaryItem({ item }: { item: CartItem }) {
+  const amt = item.weightKg ?? item.quantity;
   const detail = item.product.weightBased
-    ? `${item.quantity} kg`
+    ? `${amt} kg`
     : item.quantity === 1
       ? '1 Unidad'
       : `${item.quantity} Unidades`;
-  const lineTotal = item.price * item.quantity;
+  const lineTotal = item.price * amt;
 
   return (
     <div className="flex justify-between items-start">

@@ -140,8 +140,16 @@ export class Product {
 }
 ```
 
-### 3.2 CheckoutSession (Sesión de Checkout)
+### 3.2 CheckoutSession (Sesión de Checkout) ✅
 
+**Implementado** como `carts` + `orders` (adaptado del database-plan). Se añadió `document_id` para cédula de identidad:
+
+- `carts.document_id` — Cédula ingresada al iniciar compra
+- `orders.document_id` — Copiado del cart al crear la orden
+- POST `/api/carts` — Acepta `documentId` en body
+- Frontend `createCart(documentId)` — Envía cédula al crear carrito
+
+**Plan original (TypeORM):**
 ```typescript
 @Entity('checkout_sessions')
 export class CheckoutSession {
@@ -194,8 +202,17 @@ export class CheckoutSession {
 }
 ```
 
-### 3.3 CartItem (Item del Carrito)
+### 3.3 CartItem (Item del Carrito) ✅
 
+**Implementado** en `cart_items` (adaptado). Se añadió `weight_kg` y `created_at`:
+
+- `cart_items.weight_kg` — Peso en kg para productos por peso
+- `cart_items.created_at` — Fecha de creación
+- POST `/api/carts/:cartId/items` — Acepta `weightKg` en body para productos por peso
+- PATCH `/api/carts/:cartId/items/:itemId` — Acepta `weightKg` para actualizar peso
+- Orden: cálculo de subtotal usa `weight_kg` cuando está presente
+
+**Plan original (TypeORM):**
 ```typescript
 @Entity('cart_items')
 export class CartItem {
