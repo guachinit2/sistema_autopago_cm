@@ -46,8 +46,69 @@ export function BarcodeCamera({ mode, onScan, onClose, onError }: BarcodeCameraP
     };
 
     if (mode === 'barcode') {
+      const originalWarn = console.warn;
+      const suppressQuaggaWarn = (...args: unknown[]) => {
+        const msg = String(args[0] ?? '');
+        if (msg.includes('InputStreamBrowser') || msg.includes('createLiveStream') || msg.includes('createVideoStream')) return;
+        originalWarn.apply(console, args);
+      };
+
+      const tryHtml5Fallback = async () => {
+        if (!mountedRef.current) return;
+        setStatus('loading');
+        setErrorMessage(null);
+        try {
+          const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode');
+          const el = document.getElementById(SCANNER_ID);
+          if (!el || !mountedRef.current) return;
+          const scanner = new Html5Qrcode(SCANNER_ID, {
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+            ],
+            useBarCodeDetectorIfSupported: false,
+          });
+          html5ScannerRef.current = scanner;
+          const cameras = await Html5Qrcode.getCameras();
+          if (!mountedRef.current || cameras.length === 0) {
+            setErrorMessage('No se detectó ninguna cámara');
+            setStatus('error');
+            html5ScannerRef.current = null;
+            return;
+          }
+          const handleScanError = () => {
+            if (!mountedRef.current) return;
+            const now = Date.now();
+            if (now - lastErrorUpdateRef.current > ERROR_CALLBACK_THROTTLE_MS) {
+              lastErrorUpdateRef.current = now;
+              setScanFeedback((prev) => (prev === 'detected' ? prev : 'searching'));
+            }
+          };
+          await scanner.start(
+            cameras[0].id,
+            { fps: 5, qrbox: { width: 400, height: 280 }, aspectRatio: 1.777778 },
+            handleScanSuccess,
+            handleScanError
+          );
+          if (!mountedRef.current) return;
+          scannerRunningRef.current = true;
+          setStatus('active');
+          setScanFeedback('searching');
+        } catch (fallbackErr) {
+          if (!mountedRef.current) return;
+          const msg = fallbackErr instanceof Error ? fallbackErr.message : 'Error al acceder a la cámara';
+          setErrorMessage(msg);
+          setStatus('error');
+          onError?.(msg);
+          html5ScannerRef.current = null;
+        }
+      };
+
       const initQuagga = async () => {
         try {
+          console.warn = suppressQuaggaWarn;
           const { default: Quagga } = await import('@ericblade/quagga2');
           quaggaRef.current = Quagga;
 
@@ -55,7 +116,6 @@ export function BarcodeCamera({ mode, onScan, onClose, onError }: BarcodeCameraP
           if (!el || !mountedRef.current) return;
 
           await new Promise((r) => requestAnimationFrame(r));
-
           if (!mountedRef.current) return;
 
           const handler = (data: { codeResult: { code: string } }) => {
@@ -71,9 +131,8 @@ export function BarcodeCamera({ mode, onScan, onClose, onError }: BarcodeCameraP
                 type: 'LiveStream',
                 target: el,
                 constraints: {
-                  width: { min: 640, ideal: 1280, max: 1920 },
-                  height: { min: 480, ideal: 720, max: 1080 },
-                  facingMode: { ideal: 'environment' },
+                  width: { min: 320, ideal: 640, max: 1920 },
+                  height: { min: 240, ideal: 480, max: 1080 },
                   frameRate: { ideal: 10 },
                 },
               },
@@ -87,12 +146,10 @@ export function BarcodeCamera({ mode, onScan, onClose, onError }: BarcodeCameraP
             (err: Error | null) => {
               if (!mountedRef.current) return;
               if (err) {
-                const msg = err instanceof Error ? err.message : 'Error al acceder a la cámara';
-                setErrorMessage(msg);
-                setStatus('error');
-                onError?.(msg);
+                console.warn = originalWarn;
                 quaggaRef.current = null;
                 onDetectedRef.current = null;
+                tryHtml5Fallback();
                 return;
               }
               Quagga.onDetected(handler);
@@ -102,14 +159,12 @@ export function BarcodeCamera({ mode, onScan, onClose, onError }: BarcodeCameraP
               setScanFeedback('searching');
             }
           );
-        } catch (err) {
+        } catch {
           if (!mountedRef.current) return;
-          const msg = err instanceof Error ? err.message : 'Error al acceder a la cámara';
-          setErrorMessage(msg);
-          setStatus('error');
-          onError?.(msg);
+          console.warn = originalWarn;
           quaggaRef.current = null;
           onDetectedRef.current = null;
+          tryHtml5Fallback();
         }
       };
 
@@ -117,6 +172,7 @@ export function BarcodeCamera({ mode, onScan, onClose, onError }: BarcodeCameraP
 
       return () => {
         mountedRef.current = false;
+        console.warn = originalWarn;
         const Quagga = quaggaRef.current;
         const handler = onDetectedRef.current;
         quaggaRef.current = null;
@@ -127,6 +183,16 @@ export function BarcodeCamera({ mode, onScan, onClose, onError }: BarcodeCameraP
           try {
             Quagga.offDetected(handler);
             Quagga.stop();
+          } catch {
+            // Ignorar
+          }
+        }
+        const html5Scanner = html5ScannerRef.current;
+        html5ScannerRef.current = null;
+        if (html5Scanner && scannerRunningRef.current) {
+          scannerRunningRef.current = false;
+          try {
+            html5Scanner.stop().catch(() => {});
           } catch {
             // Ignorar
           }

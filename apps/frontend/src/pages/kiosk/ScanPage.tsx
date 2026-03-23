@@ -308,36 +308,6 @@ export function ScanPage() {
               </p>
             </div>
 
-            {/* Selector de modo: Código de barras / QR */}
-            {!cameraActive && (
-              <div className="mb-6 flex gap-4 justify-center">
-                <button
-                  type="button"
-                  onClick={() => setScanMode('barcode')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-                    scanMode === 'barcode'
-                      ? 'bg-[#b5000b] text-white shadow-lg'
-                      : 'bg-white text-[#5e3f3b] border-2 border-[#e9bcb6] hover:border-[#b5000b]/50'
-                  }`}
-                >
-                  <span className="material-symbols-outlined">barcode_reader</span>
-                  Código de barras
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setScanMode('qr')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-                    scanMode === 'qr'
-                      ? 'bg-[#b5000b] text-white shadow-lg'
-                      : 'bg-white text-[#5e3f3b] border-2 border-[#e9bcb6] hover:border-[#b5000b]/50'
-                  }`}
-                >
-                  <span className="material-symbols-outlined">qr_code_2</span>
-                  QR
-                </button>
-              </div>
-            )}
-
             {/* Área cámara / escáner */}
             <div className="relative w-full aspect-video max-h-[320px] bg-[#1a1c1c] rounded-[2rem] shadow-2xl overflow-hidden border-8 border-white">
               {cameraActive ? (
@@ -345,7 +315,6 @@ export function ScanPage() {
                   mode={scanMode}
                   onScan={handleScan}
                   onClose={() => setCameraActive(false)}
-                  onError={() => setCameraActive(false)}
                 />
               ) : (
                 <button
@@ -407,26 +376,35 @@ export function ScanPage() {
               )}
             </div>
 
-            {/* Botones: Escribir código / Ayuda */}
+            {/* Selector de modo: Código de barras / QR */}
             <div className="mt-10 grid grid-cols-2 gap-6 max-w-lg mx-auto">
               <button
                 type="button"
-                onClick={() => document.getElementById('manual-barcode-input')?.focus()}
-                className="flex flex-col items-center justify-center p-8 bg-white rounded-3xl shadow-lg border border-transparent hover:border-[#b5000b]/20 transition-all active:scale-95"
+                onClick={() => setScanMode('barcode')}
+                className={`flex flex-col items-center justify-center p-8 rounded-3xl shadow-lg border-2 transition-all active:scale-95 ${
+                  scanMode === 'barcode'
+                    ? 'bg-[#b5000b] text-white border-[#b5000b]'
+                    : 'bg-white text-[#1a1c1c] border-transparent hover:border-[#b5000b]/30'
+                }`}
               >
-                <div className="w-16 h-16 rounded-full bg-[#ffdad5] mb-4 flex items-center justify-center text-[#b5000b]">
-                  <span className="material-symbols-outlined text-3xl">keyboard</span>
+                <div className={`w-16 h-16 rounded-full mb-4 flex items-center justify-center ${scanMode === 'barcode' ? 'bg-white/20' : 'bg-[#ffdad5] text-[#b5000b]'}`}>
+                  <span className="material-symbols-outlined text-3xl">barcode_reader</span>
                 </div>
-                <span className="font-bold text-[#1a1c1c]">Escribir código</span>
+                <span className="font-bold">Código de barras</span>
               </button>
               <button
                 type="button"
-                className="flex flex-col items-center justify-center p-8 bg-white rounded-3xl shadow-lg border border-transparent hover:border-[#3a5f94]/20 transition-all active:scale-95"
+                onClick={() => setScanMode('qr')}
+                className={`flex flex-col items-center justify-center p-8 rounded-3xl shadow-lg border-2 transition-all active:scale-95 ${
+                  scanMode === 'qr'
+                    ? 'bg-[#b5000b] text-white border-[#b5000b]'
+                    : 'bg-white text-[#1a1c1c] border-transparent hover:border-[#b5000b]/30'
+                }`}
               >
-                <div className="w-16 h-16 rounded-full bg-[#d5e3ff] mb-4 flex items-center justify-center text-[#3a5f94]">
-                  <span className="material-symbols-outlined text-3xl">contact_support</span>
+                <div className={`w-16 h-16 rounded-full mb-4 flex items-center justify-center ${scanMode === 'qr' ? 'bg-white/20' : 'bg-[#d5e3ff] text-[#3a5f94]'}`}>
+                  <span className="material-symbols-outlined text-3xl">qr_code_2</span>
                 </div>
-                <span className="font-bold text-[#1a1c1c]">Solicitar ayuda</span>
+                <span className="font-bold">QR</span>
               </button>
             </div>
 
