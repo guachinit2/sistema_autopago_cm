@@ -1,5 +1,9 @@
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSessionStore } from '../../stores/useSessionStore';
 import { useCartStore } from '../../stores/useCartStore';
+import { updateCartItem, removeCartItem } from '../../services/cartService';
+import { createOrder } from '../../services/orderService';
 import { format } from 'date-fns';
 import type { CartItem } from '../../types';
 
@@ -62,7 +66,55 @@ function CartItemRow({ item, onUpdateQuantity, onRemove }: {
 
 export function CartPage() {
   const navigate = useNavigate();
+  const cartId = useSessionStore((s) => s.cartId);
   const { items, subtotal, tax, total, updateQuantity, removeItem } = useCartStore();
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+
+  const handleUpdateQuantity = useCallback(
+    async (itemId: string, quantity: number) => {
+      updateQuantity(itemId, quantity);
+      if (cartId) {
+        try {
+          if (quantity <= 0) {
+            await removeCartItem(cartId, itemId);
+          } else {
+            await updateCartItem(cartId, itemId, quantity);
+          }
+        } catch {
+          // Silently fail for now
+        }
+      }
+    },
+    [cartId, updateQuantity]
+  );
+
+  const handleRemove = useCallback(
+    async (itemId: string) => {
+      removeItem(itemId);
+      if (cartId) {
+        try {
+          await removeCartItem(cartId, itemId);
+        } catch {
+          // Silently fail for now
+        }
+      }
+    },
+    [cartId, removeItem]
+  );
+
+  const setOrderId = useSessionStore((s) => s.setOrderId);
+
+  const handleGoToPayment = useCallback(async () => {
+    if (!cartId || isCreatingOrder) return;
+    setIsCreatingOrder(true);
+    try {
+      const order = await createOrder(cartId);
+      setOrderId(order.id);
+      navigate('/kiosk/payment');
+    } catch {
+      setIsCreatingOrder(false);
+    }
+  }, [cartId, isCreatingOrder, navigate, setOrderId]);
 
   if (items.length === 0) {
     return (
@@ -110,8 +162,8 @@ export function CartPage() {
             <CartItemRow
               key={item.id}
               item={item}
-              onUpdateQuantity={updateQuantity}
-              onRemove={removeItem}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemove={handleRemove}
             />
           ))}
         </div>
@@ -134,11 +186,12 @@ export function CartPage() {
 
           <div className="flex flex-col gap-3 mt-6">
             <button
-              onClick={() => navigate('/kiosk/payment')}
-              className="w-full py-4 bg-[#b5000b] hover:bg-[#930007] text-white text-xl font-black rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
+              onClick={handleGoToPayment}
+              disabled={!cartId || isCreatingOrder}
+              className="w-full py-4 bg-[#b5000b] hover:bg-[#930007] disabled:opacity-70 text-white text-xl font-black rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined">payment</span>
-              Ir a pago
+              {isCreatingOrder ? 'Creando orden...' : 'Ir a pago'}
             </button>
             <button
               onClick={() => navigate('/kiosk/scan')}

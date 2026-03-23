@@ -1,8 +1,9 @@
 import { Pool } from 'pg';
-
-const connectionString =
-  process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/autopago';
+import { databaseConfig } from './config';
 
 export const pool = new Pool({
-  connectionString,
+  connectionString: databaseConfig.connectionString,
+  max: databaseConfig.max,
+  idleTimeoutMillis: databaseConfig.idleTimeoutMillis,
+  connectionTimeoutMillis: databaseConfig.connectionTimeoutMillis,
 });

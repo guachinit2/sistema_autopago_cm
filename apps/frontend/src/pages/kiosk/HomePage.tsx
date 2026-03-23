@@ -1,17 +1,27 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../../stores/useSessionStore';
 import { useCartStore } from '../../stores/useCartStore';
+import { createCart } from '../../services/cartService';
 import { format } from 'date-fns';
 
 export function HomePage() {
   const navigate = useNavigate();
   const { state, startSession } = useSessionStore();
   const { clearCart } = useCartStore();
+  const [isStarting, setIsStarting] = useState(false);
 
-  const handleStartPurchase = () => {
-    clearCart();
-    startSession();
-    navigate('/kiosk/scan');
+  const handleStartPurchase = async () => {
+    if (isStarting) return;
+    setIsStarting(true);
+    try {
+      const { id: cartId } = await createCart();
+      clearCart();
+      startSession(cartId);
+      navigate('/kiosk/scan');
+    } catch {
+      setIsStarting(false);
+    }
   };
 
   if (state === 'timeout') {
@@ -70,9 +80,12 @@ export function HomePage() {
 
           <button
             onClick={handleStartPurchase}
-            className="w-full max-w-xl h-28 bg-[#b5000b] hover:bg-[#930007] rounded-[2rem] flex items-center justify-center gap-4 shadow-2xl shadow-[#b5000b]/40 hover:scale-[1.02] transition-all active:scale-95 group"
+            disabled={isStarting}
+            className="w-full max-w-xl h-28 bg-[#b5000b] hover:bg-[#930007] disabled:opacity-70 rounded-[2rem] flex items-center justify-center gap-4 shadow-2xl shadow-[#b5000b]/40 hover:scale-[1.02] transition-all active:scale-95 group"
           >
-            <span className="text-white text-3xl font-black uppercase tracking-tighter">Iniciar compra</span>
+            <span className="text-white text-3xl font-black uppercase tracking-tighter">
+              {isStarting ? 'Creando carrito...' : 'Iniciar compra'}
+            </span>
             <span className="material-symbols-outlined text-white text-3xl group-hover:translate-x-2 transition-transform">arrow_forward</span>
           </button>
         </div>

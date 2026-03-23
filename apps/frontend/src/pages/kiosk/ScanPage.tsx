@@ -1,9 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSessionStore } from '../../stores/useSessionStore';
 import { useCartStore } from '../../stores/useCartStore';
 import { playScanBeep } from '../../utils/beep';
 import { BarcodeCamera } from '../../components/kiosk/BarcodeCamera';
 import { getProductByBarcode } from '../../services/productService';
+import {
+  addCartItem,
+  updateCartItem,
+  removeCartItem as removeCartItemApi,
+} from '../../services/cartService';
 import type { CartItem } from '../../types';
 
 function CartSidebarItem({
@@ -63,13 +69,17 @@ function CartSidebarItem({
 
 export function ScanPage() {
   const navigate = useNavigate();
+  const cartId = useSessionStore((s) => s.cartId);
   const addItem = useCartStore((s) => s.addItem);
+  const addItemFromApi = useCartStore((s) => s.addItemFromApi);
   const { items, subtotal, tax, total, updateQuantity, removeItem } = useCartStore();
   const [manualCode, setManualCode] = useState('');
   const [scanStatus, setScanStatus] = useState<'idle' | 'valid' | 'invalid' | 'partial'>('idle');
   const [cameraActive, setCameraActive] = useState(false);
   const usbBufferRef = useRef({ buffer: '', lastKeyTime: 0 });
   const scanCooldownRef = useRef(false);
+
+  const [toastProduct, setToastProduct] = useState<string | null>(null);
 
   const processCode = useCallback(
     async (code: string) => {
@@ -78,7 +88,14 @@ export function ScanPage() {
         try {
           const product = await getProductByBarcode(trimmed);
           if (product) {
-            addItem(product);
+            if (cartId) {
+              const cartItem = await addCartItem(cartId, product.id, 1);
+              addItemFromApi(cartItem);
+            } else {
+              addItem(product);
+            }
+            setToastProduct(product.name);
+            setTimeout(() => setToastProduct(null), 2000);
             setScanStatus('valid');
             playScanBeep();
             if (navigator.vibrate) navigator.vibrate(200);
@@ -99,13 +116,45 @@ export function ScanPage() {
         setScanStatus('invalid');
       }
     },
-    [addItem]
+    [cartId, addItem, addItemFromApi]
   );
 
   const handleManualSubmit = () => {
     processCode(manualCode);
     setManualCode('');
   };
+
+  const handleUpdateQuantity = useCallback(
+    async (itemId: string, quantity: number) => {
+      updateQuantity(itemId, quantity);
+      if (cartId) {
+        try {
+          if (quantity <= 0) {
+            await removeCartItemApi(cartId, itemId);
+          } else {
+            await updateCartItem(cartId, itemId, quantity);
+          }
+        } catch {
+          // Revert: refetch cart or show error
+        }
+      }
+    },
+    [cartId, updateQuantity]
+  );
+
+  const handleRemove = useCallback(
+    async (itemId: string) => {
+      removeItem(itemId);
+      if (cartId) {
+        try {
+          await removeCartItemApi(cartId, itemId);
+        } catch {
+          // Revert if needed
+        }
+      }
+    },
+    [cartId, removeItem]
+  );
 
   // Fallback USB: escáneres USB emulan teclado
   useEffect(() => {
@@ -140,21 +189,6 @@ export function ScanPage() {
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [processCode]);
-
-  const [toastProduct, setToastProduct] = useState<string | null>(null);
-  const prevItemsLength = useRef(0);
-  useEffect(() => {
-    if (scanStatus === 'valid' && items.length > prevItemsLength.current && items.length > 0) {
-      const last = items[items.length - 1];
-      if (last) {
-        setToastProduct(last.product.name);
-        prevItemsLength.current = items.length;
-        const t = setTimeout(() => setToastProduct(null), 2000);
-        return () => clearTimeout(t);
-      }
-    }
-    prevItemsLength.current = items.length;
-  }, [scanStatus, items]);
 
   return (
     <div className="h-screen flex flex-col bg-[#f9f9f9] text-[#1a1c1c] overflow-hidden">
@@ -198,8 +232,8 @@ export function ScanPage() {
                   <CartSidebarItem
                     key={item.id}
                     item={item}
-                    onUpdateQuantity={updateQuantity}
-                    onRemove={removeItem}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemove={handleRemove}
                   />
                 ))}
               </>

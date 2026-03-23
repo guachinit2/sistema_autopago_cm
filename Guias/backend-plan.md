@@ -6,77 +6,93 @@ Este documento detalla el plan de desarrollo del backend para el sistema de auto
 
 ---
 
-## 1. Stack Tecnológico
+## Adaptación al database-plan (prioridad)
 
-### 1.1 Core
+Este plan se adapta a las decisiones del [database-plan](database-plan.md). Cuando hay conflicto, prevalece el database-plan:
 
-- **NestJS 10** - Framework Node.js
-- **TypeScript** - Tipado estático
-- **Node.js 20+** - Runtime
-
-### 1.2 Base de Datos
-
-- **PostgreSQL 15** - Base de datos principal
-- **TypeORM** - ORM para gestión de datos
-- **Redis 7** - Caché y sesiones
-
-### 1.3 Comunicación
-
-- **Express** - Servidor HTTP
-- **Socket.io** - WebSockets para tiempo real
-- **REST API** - Endpoints RESTful
-
-### 1.4 Seguridad
-
-- **Passport.js** - Autenticación
-- **JWT** - Tokens de sesión
-- **bcrypt** - Hash de contraseñas
-- **Helmet** - Headers de seguridad
+| Plan original | Implementación actual | Razón |
+|---------------|------------------------|-------|
+| NestJS 10 | **Express** | Base ya implementada con Express |
+| TypeORM | **pg (nativo)** | database-plan usa `scripts/init-db.sql` directo |
+| checkout_sessions | **carts + orders** | Esquema del database-plan (Fase 1-3) |
 
 ---
 
-## 2. Estructura de Proyecto
+## 1. Stack Tecnológico
+
+### 1.1 Core ✅
+
+- **Express** - Framework Node.js (adaptado desde NestJS)
+- **TypeScript** - Tipado estático
+- **Node.js 20+** - Runtime (engines en package.json)
+
+### 1.2 Base de Datos ✅
+
+- **PostgreSQL 15** - Base de datos principal
+- **pg** - Cliente nativo (adaptado desde TypeORM; esquema en `scripts/init-db.sql`)
+- **Redis 7** - Caché y sesiones (config disponible)
+- **Config:** `src/config/database.config.ts`, `redis.config.ts`
+
+### 1.3 Comunicación ✅
+
+- **Express** - Servidor HTTP
+- **Socket.io** - WebSockets (servidor separado en `src/socket/`)
+- **REST API** - Endpoints bajo `/api/*`
+
+### 1.4 Seguridad ✅
+
+- **Helmet** - Headers de seguridad (implementado)
+- **Passport.js** - Autenticación (pendiente; operadores en Fase 5)
+- **JWT** - Tokens de sesión (pendiente)
+- **bcrypt** - Hash de contraseñas (pendiente)
+
+---
+
+## 2. Estructura de Proyecto ✅
 
 ```
 apps/backend/
 ├── src/
 │   ├── common/
-│   │   ├── decorators/       # Custom decorators
-│   │   ├── filters/          # Exception filters
-│   │   ├── guards/           # Auth guards
-│   │   ├── interceptors/     # Response interceptors
-│   │   └── pipes/            # Validation pipes
+│   │   ├── errors/           # error-handler (Express)
+│   │   ├── middleware/      # Pendiente
+│   │   └── README.md
 │   ├── config/
+│   │   ├── app.config.ts
 │   │   ├── database.config.ts
 │   │   ├── redis.config.ts
-│   │   └── app.config.ts
+│   │   └── index.ts
 │   ├── modules/
-│   │   ├── auth/             # Autenticación
-│   │   ├── products/         # Catálogo de productos
-│   │   ├── checkout/         # Carrito y checkout
-│   │   ├── payments/         # Pagos
-│   │   ├── inventory/        # Inventario
-│   │   ├── scale/            # Básculas
-│   │   ├── operator/         # Operadores
-│   │   ├── audit/            # Auditoría
-│   │   └── reports/          # Reportes
+│   │   ├── products/        # Catálogo (GET /barcode/:barcode)
+│   │   ├── carts/           # Carrito (database-plan)
+│   │   ├── orders/          # Órdenes
+│   │   ├── payments/        # Métodos + pagos
+│   │   └── index.ts
 │   ├── socket/
-│   │   ├── events/           # Socket events
-│   │   └── gateways/         # Socket gateways
+│   │   ├── events/          # Constantes de eventos
+│   │   └── index.ts
 │   ├── database/
-│   │   ├── entities/         # TypeORM entities
-│   │   ├── migrations/       # DB migrations
-│   │   └── seeds/            # Seed data
-│   ├── main.ts
-│   └── app.module.ts
+│   │   └── README.md        # Ref. init-db.sql
+│   ├── db.ts
+│   └── main.ts
 ```
+
+**Implementado:** common, config, modules (products, carts, orders, payments), socket/events, database.  
+**Pendiente:** auth, inventory, scale, operator, audit, reports.
 
 ---
 
 ## 3. Entidades de Base de Datos
 
-### 3.1 Product (Producto)
+### 3.1 Product (Producto) ✅
 
+Implementado como tipos TypeScript + ProductService (adaptado a pg, sin TypeORM):
+
+- `database/types/product.types.ts` — Product, ProductRow, rowToProduct
+- `modules/products/products.service.ts` — findByBarcode, findById
+- `modules/products/products.routes.ts` — GET /barcode/:barcode, GET /:id
+
+**Plan original (TypeORM):**
 ```typescript
 @Entity('products')
 export class Product {

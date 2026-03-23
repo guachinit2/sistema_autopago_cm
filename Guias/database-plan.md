@@ -13,12 +13,16 @@ Este documento detalla el plan de desarrollo de la base de datos para el sistema
 | **Fase 1** | Tabla `products` + seed básico | ✅ Completado |
 | | Backend `GET /api/products/barcode/:barcode` | ✅ Completado |
 | | Frontend consume API (sin MOCK) | ✅ Completado |
-| **Fase 2** | Tablas `carts`, `cart_items`, `orders` | 🔲 Siguiente |
-| **Fase 3** | Tablas `payment_methods`, `payments` | 🔲 Pendiente |
-| **Fase 4** | Inventario (stock, movimientos) | 🔲 Pendiente |
+| **Fase 2** | Tablas `carts`, `cart_items`, `orders` | ✅ Completado |
+| | Backend `POST /api/carts`, `POST /api/carts/:id/items`, etc. | ✅ Completado |
+| | Frontend integra carrito/orden con API | ✅ Completado |
+| **Fase 3** | Tablas `payment_methods`, `payments` | ✅ Completado |
+| | Backend `GET /api/payment-methods`, `POST /api/payments` | ✅ Completado |
+| | Frontend integra selección de método y pago con API | ✅ Completado |
+| **Fase 4** | Inventario (stock, movimientos) | 🔲 Siguiente |
 | **Fase 5** | Operadores, kiosks, auditoría | 🔲 Pendiente |
 
-**Fase actual:** Fase 2 — Carritos y órdenes
+**Fase actual:** Fase 3 — Pagos y métodos
 
 ---
 

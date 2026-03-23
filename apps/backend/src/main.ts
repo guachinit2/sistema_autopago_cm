@@ -1,11 +1,20 @@
 import cors from 'cors';
 import express from 'express';
-import productsRouter from './routes/products';
+import helmet from 'helmet';
+import { errorHandler } from './common/errors';
+import { appConfig } from './config';
+import {
+  productsRouter,
+  cartsRouter,
+  ordersRouter,
+  paymentMethodsRouter,
+  paymentsRouter,
+} from './modules';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({ origin: appConfig.corsOrigin }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
@@ -17,7 +26,13 @@ app.get('/api', (_req, res) => {
 });
 
 app.use('/api/products', productsRouter);
+app.use('/api/carts', cartsRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/payment-methods', paymentMethodsRouter);
+app.use('/api/payments', paymentsRouter);
 
-app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
+app.use(errorHandler);
+
+app.listen(appConfig.port, () => {
+  console.log(`Backend running on port ${appConfig.port}`);
 });
