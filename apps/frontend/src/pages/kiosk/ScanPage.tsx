@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSessionStore } from '../../stores/useSessionStore';
 import { useCartStore } from '../../stores/useCartStore';
 import { playScanBeep } from '../../utils/beep';
-import { BarcodeCamera } from '../../components/kiosk/BarcodeCamera';
+import { BarcodeCamera, type ScanMode } from '../../components/kiosk/BarcodeCamera';
 import { getProductByBarcode } from '../../services/productService';
 import {
   addCartItem,
@@ -84,6 +84,7 @@ export function ScanPage() {
   const [manualCode, setManualCode] = useState('');
   const [scanStatus, setScanStatus] = useState<'idle' | 'valid' | 'invalid' | 'partial'>('idle');
   const [cameraActive, setCameraActive] = useState(false);
+  const [scanMode, setScanMode] = useState<ScanMode>('barcode');
   const usbBufferRef = useRef({ buffer: '', lastKeyTime: 0 });
   const scanCooldownRef = useRef(false);
 
@@ -137,6 +138,15 @@ export function ScanPage() {
     processCode(manualCode);
     setManualCode('');
   };
+
+  const handleScan = useCallback(
+    (code: string) => {
+      setManualCode(code);
+      document.getElementById('manual-barcode-input')?.focus();
+      processCode(code);
+    },
+    [processCode]
+  );
 
   const handleUpdateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
@@ -298,11 +308,42 @@ export function ScanPage() {
               </p>
             </div>
 
+            {/* Selector de modo: Código de barras / QR */}
+            {!cameraActive && (
+              <div className="mb-6 flex gap-4 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setScanMode('barcode')}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+                    scanMode === 'barcode'
+                      ? 'bg-[#b5000b] text-white shadow-lg'
+                      : 'bg-white text-[#5e3f3b] border-2 border-[#e9bcb6] hover:border-[#b5000b]/50'
+                  }`}
+                >
+                  <span className="material-symbols-outlined">barcode_reader</span>
+                  Código de barras
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScanMode('qr')}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+                    scanMode === 'qr'
+                      ? 'bg-[#b5000b] text-white shadow-lg'
+                      : 'bg-white text-[#5e3f3b] border-2 border-[#e9bcb6] hover:border-[#b5000b]/50'
+                  }`}
+                >
+                  <span className="material-symbols-outlined">qr_code_2</span>
+                  QR
+                </button>
+              </div>
+            )}
+
             {/* Área cámara / escáner */}
             <div className="relative w-full aspect-video max-h-[320px] bg-[#1a1c1c] rounded-[2rem] shadow-2xl overflow-hidden border-8 border-white">
               {cameraActive ? (
                 <BarcodeCamera
-                  onScan={processCode}
+                  mode={scanMode}
+                  onScan={handleScan}
                   onClose={() => setCameraActive(false)}
                   onError={() => setCameraActive(false)}
                 />
@@ -316,7 +357,9 @@ export function ScanPage() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-64 h-48 border-2 border-dashed border-white/30 rounded-3xl flex flex-col items-center justify-center gap-3 group-hover:border-white/50 transition-colors">
                       <span className="material-symbols-outlined text-white/20 text-6xl group-hover:text-white/40">barcode_scanner</span>
-                      <span className="text-white/50 text-sm font-medium">Clic para activar cámara</span>
+                      <span className="text-white/50 text-sm font-medium">
+                        Clic para activar cámara ({scanMode === 'barcode' ? 'códigos de barras' : 'QR'})
+                      </span>
                     </div>
                   </div>
                   <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/40 backdrop-blur-md px-6 py-2 rounded-full text-white/80 text-sm font-medium">

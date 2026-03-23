@@ -13,3 +13,18 @@
 body {
   font-family: 'Inter', system-ui, sans-serif;
 }
+
+/* Quagga2: video y canvas dentro del viewport */
+#barcode-scanner-instance {
+  position: relative;
+  overflow: hidden;
+}
+#barcode-scanner-instance canvas,
+#barcode-scanner-instance video {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}

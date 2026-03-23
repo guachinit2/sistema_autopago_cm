@@ -105,8 +105,15 @@ services:
     networks:
       - autopago-network
     volumes:
-      - ./apps/frontend:/app
-      - /app/node_modules
+      # Montar solo código y config; node_modules viene de la imagen (con Quagga2)
+      - ./apps/frontend/src:/app/src
+      - ./apps/frontend/index.html:/app/index.html
+      - ./apps/frontend/vite.config.ts:/app/vite.config.ts
+      - ./apps/frontend/tsconfig.json:/app/tsconfig.json
+      - ./apps/frontend/tsconfig.node.json:/app/tsconfig.node.json
+      - ./apps/frontend/postcss.config.js:/app/postcss.config.js
+      - ./apps/frontend/tailwind.config.js:/app/tailwind.config.js
+    command: npm run dev
 
   # Reverse Proxy
   nginx:
