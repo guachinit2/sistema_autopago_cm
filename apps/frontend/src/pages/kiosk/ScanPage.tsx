@@ -297,7 +297,7 @@ export function ScanPage() {
         </aside>
 
         {/* Área central: escáner */}
-        <main className="flex-1 flex flex-col items-center justify-center p-8 overflow-auto">
+        <main className="flex-1 flex flex-col items-center justify-center p-8 pt-16 overflow-auto">
           <div className="max-w-2xl w-full">
             <div className="mb-8">
               <h1 className="text-3xl font-extrabold text-[#1a1c1c] mb-2 tracking-tight">
