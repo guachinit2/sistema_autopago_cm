@@ -13,7 +13,8 @@ Este documento detalla el plan de desarrollo de la base de datos para el sistema
 | **Fase 1** | Tabla `products` + seed básico | ✅ Completado |
 | | Backend `GET /api/products/barcode/:barcode` | ✅ Completado |
 | | Frontend consume API (sin MOCK) | ✅ Completado |
-| **Fase 2** | Tablas `carts`, `cart_items`, `orders` | ✅ Completado |
+| **Fase 2 (3.2)** | Tablas `carts`, `cart_items`, `orders` | ✅ Completado |
+| | `document_id` en carts y orders | ✅ Completado |
 | | Backend `POST /api/carts`, `POST /api/carts/:id/items`, etc. | ✅ Completado |
 | | Frontend integra carrito/orden con API | ✅ Completado |
 | **Fase 3** | Tablas `payment_methods`, `payments` | ✅ Completado |
@@ -22,25 +23,25 @@ Este documento detalla el plan de desarrollo de la base de datos para el sistema
 | **Fase 4** | Inventario (stock, movimientos) | 🔲 Siguiente |
 | **Fase 5** | Operadores, kiosks, auditoría | 🔲 Pendiente |
 
-**Fase actual:** Fase 3 — Pagos y métodos
+**Fase actual:** Fases 1–3 completadas (hasta 3.2 + pagos). Siguiente: Fase 4
 
 ---
 
-## 1. Stack
+## 1. Stack ✅
 
-### 1.1 Base de datos
+### 1.1 Base de datos ✅
 
 - **PostgreSQL 15** — Base de datos principal (configurado en `docker-compose.yml`)
 - **Redis** — Caché y sesiones (fase posterior)
 
-### 1.2 Migraciones y seeds
+### 1.2 Migraciones y seeds ✅
 
 - **Fase 1–2:** SQL directo en `scripts/init-db.sql` (ejecutado al arrancar el contenedor)
 - **Fase posterior:** Evaluar Prisma o TypeORM para migraciones versionadas
 
 ---
 
-## 2. Fases priorizadas para pruebas iniciales
+## 2. Fases priorizadas para pruebas iniciales ✅
 
 ```mermaid
 flowchart LR
@@ -64,7 +65,7 @@ flowchart LR
 
 ## 3. Esquema por fase
 
-### 3.1 Fase 1 — MVP de productos (prioridad máxima)
+### 3.1 Fase 1 — MVP de productos (prioridad máxima) ✅
 
 **Objetivo:** Reemplazar MOCK_PRODUCTS en el frontend con datos reales desde PostgreSQL.
 
@@ -91,7 +92,7 @@ flowchart LR
 
 ---
 
-### 3.2 Fase 2 — Carritos y órdenes
+### 3.2 Fase 2 — Carritos y órdenes ✅
 
 **Tabla `carts`:**
 
@@ -127,7 +128,7 @@ flowchart LR
 
 ---
 
-### 3.3 Fase 3 — Pagos y métodos
+### 3.3 Fase 3 — Pagos y métodos ✅
 
 **Tabla `payment_methods`:**
 
@@ -158,7 +159,7 @@ flowchart LR
 
 ---
 
-## 4. DDL — Fase 1
+## 4. DDL — Fase 1 ✅
 
 ```sql
 -- Tabla products
@@ -186,7 +187,7 @@ INSERT INTO products (barcode, sku, name, price) VALUES
 
 ---
 
-## 5. Integración con backend
+## 5. Integración con backend ✅
 
 El backend (Express en `apps/backend/src/main.ts`) debe:
 

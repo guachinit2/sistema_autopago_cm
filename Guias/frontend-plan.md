@@ -15,20 +15,20 @@ Este documento detalla el plan de desarrollo del frontend para el sistema de aut
 | | **4.3** Pantalla del Carrito (CartPage) | ❌ Eliminada — Ir directo a pagos |
 | | **4.4** Pantalla de Selección de Pago | ✅ Completado |
 | | **4.5** Pantalla de Confirmación de Pago | ✅ Completado |
-| | **4.5.5** Pantalla de Ingreso de Documento de Identidad | 🔲 Siguiente |
+| | **4.5.5** Pantalla de Ingreso de Documento de Identidad | ✅ Completado |
 | | **4.6** Pantalla de Recibo Digital | ✅ Completado |
-| **Fase 2** | 4.7–4.10 (Pesaje, Operador) | 🔲 Pendiente |
+| **Fase 2** | 4.7–4.10 (Pesaje, Operador) | 🔲 Siguiente |
 | **Fase 3** | 4.11–4.15 (Admin, Reportes) | 🔲 Pendiente |
 
-**Fase actual:** 4.6 completado — Fase 1 MVP finalizada
+**Fase actual:** Fase 1 MVP finalizada (4.1–4.6). Siguiente: Fase 2
 
 **Flujo actual:** Home → ID (4.5.5) → Escaneo → Pagos → Confirmación → Recibo *(CartPage eliminada)*
 
 ---
 
-## 1. Stack Tecnológico
+## 1. Stack Tecnológico ✅
 
-### 1.1 Core
+### 1.1 Core ✅
 
 - **React 18** - Framework principal
 - **Vite** - Build tool y dev server
@@ -36,13 +36,13 @@ Este documento detalla el plan de desarrollo del frontend para el sistema de aut
 - **Tailwind CSS** - Framework de estilos
 - **shadcn/ui** - Biblioteca de componentes UI
 
-### 1.2 Estado y Comunicación
+### 1.2 Estado y Comunicación ✅
 
 - **Zustand** - Gestión de estado global
 - **Axios** - Cliente HTTP para API REST
 - **Socket.io-client** - Comunicación en tiempo real
 
-### 1.3 Funcionalidades Específicas
+### 1.3 Funcionalidades Específicas ✅
 
 - **html5-qrcode** - Escaneo de códigos de barras con cámara
 - **date-fns** - Manipulación de fechas y formatos
@@ -50,7 +50,7 @@ Este documento detalla el plan de desarrollo del frontend para el sistema de aut
 
 ---
 
-## 2. Estructura de Proyecto
+## 2. Estructura de Proyecto ✅
 
 ```
 apps/frontend/
@@ -89,9 +89,9 @@ apps/frontend/
 
 ---
 
-## 3. Componentes UI Reutilizables
+## 3. Componentes UI Reutilizables ✅
 
-### 3.1 Componentes Base (shadcn/ui)
+### 3.1 Componentes Base (shadcn/ui) ✅
 
 - Button - Botones táctiles
 - Card - Contenedores de contenido
@@ -102,7 +102,7 @@ apps/frontend/
 - Toast - Notificaciones
 - Badge - Etiquetas de estado
 
-### 3.2 Componentes de Kiosk
+### 3.2 Componentes de Kiosk ✅
 
 ```typescript
 // Componentes específicos para interfaz táctil
@@ -163,9 +163,9 @@ interface CartSummaryProps {
 
 ## 4. Pantallas por Fase
 
-### FASE 1: MVP (Semanas 1-6)
+### FASE 1: MVP (Semanas 1-6) ✅
 
-#### 4.1 Pantalla Principal del Kiosk
+#### 4.1 Pantalla Principal del Kiosk✅
 
 **Ubicación:** `pages/kiosk/HomePage.tsx`
 
@@ -190,8 +190,8 @@ interface CartSummaryProps {
 - Timeout (pantalla de ahorro)
 
 ---
-
-#### 4.2 Pantalla de Escaneo
+ 
+#### 4.2 Pantalla de Escaneo ✅
 
 **Ubicación:** `pages/kiosk/ScanPage.tsx`
 
@@ -230,7 +230,7 @@ interface CartSummaryProps {
 
 ---
 
-#### 4.4 Pantalla de Selección de Pago
+#### 4.4 Pantalla de Selección de Pago ✅
 
 **Ubicación:** `pages/kiosk/PaymentMethodPage.tsx`
 
@@ -253,7 +253,7 @@ interface CartSummaryProps {
 
 ---
 
-#### 4.5 Pantalla de Confirmación de Pago
+#### 4.5 Pantalla de Confirmación de Pago ✅
 
 **Ubicación:** `pages/kiosk/PaymentConfirmPage.tsx`
 
@@ -273,7 +273,7 @@ interface CartSummaryProps {
 
 ---
 
-#### 4.5.5 Pantalla de Ingreso de Documento de Identidad
+#### 4.5.5 Pantalla de Ingreso de Documento de Identidad ✅
 
 **Ubicación:** `pages/kiosk/IdInputPage.tsx`
 
@@ -300,7 +300,7 @@ interface CartSummaryProps {
 
 ---
 
-#### 4.6 Pantalla de Recibo Digital
+#### 4.6 Pantalla de Recibo Digital ✅
 
 **Ubicación:** `pages/kiosk/ReceiptPage.tsx`
 
