@@ -397,7 +397,7 @@ export function ScanPage() {
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (handleManualSubmit(), e.preventDefault())}
-                  placeholder="Ej: 12345678, 87654321..."
+                  placeholder="Ej: 12345678, 7590006700026..."
                   className="flex-1 px-4 py-3 border-2 border-[#e9bcb6] rounded-xl text-lg font-medium focus:border-[#b5000b] focus:ring-2 focus:ring-[#b5000b]/20 outline-none transition-all bg-white"
                 />
                 <button

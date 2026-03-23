@@ -86,7 +86,7 @@ flowchart LR
 
 **Índice:** `idx_products_barcode` en `barcode` para búsqueda rápida.
 
-**Seed mínimo:** 4–6 productos con códigos 12345678, 87654321, 11111111, 22222222.
+**Seed mínimo:** 5–6 productos con códigos 12345678, 87654321, 11111111, 22222222, 7590006700026 (EAN-13).
 
 **Integración backend:** Endpoint `GET /api/products/barcode/:barcode`.
 
@@ -182,7 +182,8 @@ INSERT INTO products (barcode, sku, name, price) VALUES
   ('12345678', 'SKU001', 'Producto prueba 1', 2.50),
   ('87654321', 'SKU002', 'Producto prueba 2', 5.99),
   ('11111111', 'SKU003', 'Leche 1L', 1.20),
-  ('22222222', 'SKU004', 'Pan integral', 0.85);
+  ('22222222', 'SKU004', 'Pan integral', 0.85),
+  ('7590006700026', 'SKU005', 'Producto EAN-13', 3.99);
 ```
 
 ---

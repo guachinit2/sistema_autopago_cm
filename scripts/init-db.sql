@@ -24,7 +24,8 @@ INSERT INTO products (barcode, sku, name, price) VALUES
   ('12345678', 'SKU001', 'Producto prueba 1', 2.50),
   ('87654321', 'SKU002', 'Producto prueba 2', 5.99),
   ('11111111', 'SKU003', 'Leche 1L', 1.20),
-  ('22222222', 'SKU004', 'Pan integral', 0.85)
+  ('22222222', 'SKU004', 'Pan integral', 0.85),
+  ('7590006700026', 'SKU005', 'Producto EAN-13', 3.99)
 ON CONFLICT (barcode) DO NOTHING;
 
 -- Fase 2: Carritos y órdenes
