@@ -12,14 +12,17 @@ Este documento detalla el plan de desarrollo del frontend para el sistema de aut
 |------|----------|--------|
 | **Fase 1** | **4.1** Pantalla Principal (HomePage) | ✅ Completado |
 | | **4.2** Pantalla de Escaneo (ScanPage) | ✅ Completado |
-| | **4.3** Pantalla del Carrito (CartPage) | ✅ Completado |
-| | **4.4** Pantalla de Selección de Pago | 🔲 Siguiente |
-| | **4.5** Pantalla de Confirmación de Pago | 🔲 Pendiente |
+| | **4.3** Pantalla del Carrito (CartPage) | ❌ Eliminada — Ir directo a pagos |
+| | **4.4** Pantalla de Selección de Pago | ✅ Completado |
+| | **4.5** Pantalla de Confirmación de Pago | ✅ Completado |
+| | **4.5.5** Pantalla de Ingreso de Documento de Identidad | 🔲 Siguiente |
 | | **4.6** Pantalla de Recibo Digital | 🔲 Pendiente |
 | **Fase 2** | 4.7–4.10 (Pesaje, Operador) | 🔲 Pendiente |
 | **Fase 3** | 4.11–4.15 (Admin, Reportes) | 🔲 Pendiente |
 
-**Fase actual:** 4.4 — Pantalla de Selección de Pago
+**Fase actual:** 4.5.5 — Pantalla de Ingreso de Documento de Identidad
+
+**Flujo actual:** Home → ID (4.5.5) → Escaneo → Pagos → Confirmación → Recibo *(CartPage eliminada)*
 
 ---
 
@@ -178,6 +181,7 @@ interface CartSummaryProps {
 
 - Timeout de inactividad (5 min) → pantalla de ahorro
 - Sonido de confirmación al iniciar
+- Botón "INICIAR COMPRA" → navega a **Pantalla de Ingreso de Documento (4.5.5)**, no directo a escaneo
 
 **Estados:**
 
@@ -202,7 +206,8 @@ interface CartSummaryProps {
   - Amarillo: código parcial
 - Input manual de código (fallback)
 - Botón para escáner USB físico
-- Botón "Volver" al carrito
+- Botón "Volver" (a Home o pantalla anterior)
+- Botón "Confirmar" → **va directo a Pantalla de Pagos** (no a carrito)
 
 **Comportamiento:**
 
@@ -219,39 +224,9 @@ interface CartSummaryProps {
 
 ---
 
-#### 4.3 Pantalla del Carrito
+#### 4.3 Pantalla del Carrito — **ELIMINADA**
 
-**Ubicación:** `pages/kiosk/CartPage.tsx`
-
-**Elementos:**
-
-- Header con número de items y total
-- Lista scrollable de productos:
-  - Imagen del producto (si existe)
-  - Nombre
-  - Precio unitario
-  - Cantidad con controls (+/-)
-  - Subtotal por item
-  - Botón eliminar (icono papelera)
-- Resumen lateral o inferior:
-  - Subtotal
-  - IVA (16%)
-  - Total
-- Botón "IR A PAGO" (prominente)
-- Botón "AGREGAR MÁS" (secundario)
-
-**Comportamiento:**
-
-- Actualización en tiempo real via Socket.io
-- Animación suave al agregar/eliminar items
-- Scroll suave al agregar nuevos items
-- Total calculado automáticamente
-
-**Casos especiales:**
-
-- Producto no encontrado: mostrar mensaje y continuar
-- Producto sin stock: disable controls, mostrar warning
-- Carrito vacío: mostrar estado vacío con CTA
+> **Nota:** Esta pantalla ha sido eliminada del flujo. El carrito se visualiza en el sidebar de la Pantalla de Escaneo (4.2). Al hacer clic en "Confirmar", el usuario va **directo a la Pantalla de Selección de Pago (4.4)**.
 
 ---
 
@@ -268,7 +243,7 @@ interface CartSummaryProps {
   - PAGO MÓVIL (icono QR)
   - OTROS (dropdown)
 - Cada opción: botón grande con icono y nombre
-- Botón "VOLVER" al carrito
+- Botón "VOLVER" (a pantalla de escaneo)
 
 **Comportamiento:**
 
@@ -295,6 +270,33 @@ interface CartSummaryProps {
 - Loading spinner durante procesamiento
 - Timeout de 30 segundos para confirmar
 - Sonido de procesamiento
+
+---
+
+#### 4.5.5 Pantalla de Ingreso de Documento de Identidad
+
+**Ubicación:** `pages/kiosk/IdInputPage.tsx`
+
+**Elementos:**
+
+- Título "Ingrese su documento de identidad"
+- Input numérico para documento venezolano:
+  - Máximo 8 dígitos
+  - Formato: solo números (ejemplo: 26754321)
+  - Placeholder o hint: "Cédula de identidad"
+- Botón "Continuar" (deshabilitado hasta ingresar documento válido)
+- Botón "Volver" a Home
+- Mensaje de validación si el formato es incorrecto
+
+**Comportamiento:**
+
+- Validación en tiempo real: solo números, máx. 8 caracteres
+- Al ingresar documento válido y pulsar Continuar → navegar a **Pantalla de Escaneo (4.2)**
+- Persistir documento en sesión/store para el recibo y trazabilidad
+
+**Flujo:**
+
+- **Home (4.1)** → Usuario hace clic en "Iniciar compra" → **ID Input (4.5.5)** → Documento válido → **Escaneo (4.2)**
 
 ---
 

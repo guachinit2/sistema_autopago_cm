@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../../stores/useSessionStore';
 import { useCartStore } from '../../stores/useCartStore';
-import {
-  getPaymentMethods,
-  createPayment,
-  type PaymentMethodFromApi,
-} from '../../services/paymentService';
+import { getPaymentMethods, type PaymentMethodFromApi } from '../../services/paymentService';
 import { playScanBeep } from '../../utils/beep';
 import type { CartItem } from '../../types';
 
@@ -50,7 +46,6 @@ export function PaymentMethodPage() {
   const { items, subtotal, tax, total } = useCartStore();
   const [methods, setMethods] = useState<PaymentMethodFromApi[]>([]);
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,22 +56,17 @@ export function PaymentMethodPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleSelect = async (methodId: string) => {
-    if (!orderId || paying) return;
-    setPaying(true);
-    setError(null);
-    try {
-      await createPayment(orderId, methodId, total);
-      playScanBeep();
-      navigate('/kiosk/confirm');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al procesar pago');
-      setPaying(false);
-    }
+  const handleSelect = (method: PaymentMethodFromApi) => {
+    if (!orderId) return;
+    playScanBeep();
+    const config = METHOD_CONFIG[method.code] ?? { icon: 'payments', subtitle: method.name };
+    navigate('/kiosk/confirm', {
+      state: { methodId: method.id, methodName: method.name, methodIcon: config.icon },
+    });
   };
 
   const handleCancel = () => {
-    navigate('/kiosk/cart');
+    navigate('/kiosk/scan');
   };
 
   if (!orderId) {
@@ -99,8 +89,7 @@ export function PaymentMethodPage() {
         <div className="flex items-center justify-between px-8 h-20 w-full">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/kiosk/cart')}
-              disabled={paying}
+              onClick={() => navigate('/kiosk/scan')}
               className="material-symbols-outlined text-[#5e3f3b] hover:bg-surface-container-low transition-colors active:scale-95 duration-150 p-2 rounded-full disabled:opacity-50"
             >
               arrow_back
@@ -187,9 +176,8 @@ export function PaymentMethodPage() {
                   return (
                     <button
                       key={method.id}
-                      onClick={() => handleSelect(method.id)}
-                      disabled={paying}
-                      className="group bg-surface-container-lowest p-10 rounded-[2rem] flex flex-col items-center justify-center gap-6 shadow-sm border border-transparent hover:border-primary/20 hover:shadow-xl transition-all duration-300 active:scale-95 disabled:opacity-70"
+                      onClick={() => handleSelect(method)}
+                      className="group bg-surface-container-lowest p-10 rounded-[2rem] flex flex-col items-center justify-center gap-6 shadow-sm border border-transparent hover:border-primary/20 hover:shadow-xl transition-all duration-300 active:scale-95"
                     >
                       <div className="w-24 h-24 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
                         <span
@@ -222,7 +210,6 @@ export function PaymentMethodPage() {
       >
         <button
           onClick={handleCancel}
-          disabled={paying}
           className="flex items-center gap-2 bg-surface-container-low text-on-surface rounded-xl px-8 py-4 font-semibold text-sm uppercase tracking-wider hover:opacity-90 transition-opacity active:scale-95 disabled:opacity-50"
         >
           <span className="material-symbols-outlined">close</span>

@@ -7,10 +7,12 @@ interface SessionStore {
   sessionId: string | null;
   cartId: string | null;
   orderId: string | null;
+  documentId: string | null;
   setState: (state: SessionState) => void;
-  startSession: (cartId: string) => void;
+  startSession: (cartId: string, documentId?: string) => void;
   setCartId: (cartId: string | null) => void;
   setOrderId: (orderId: string | null) => void;
+  setDocumentId: (documentId: string | null) => void;
   endSession: () => void;
 }
 
@@ -19,10 +21,25 @@ export const useSessionStore = create<SessionStore>((set) => ({
   sessionId: null,
   cartId: null,
   orderId: null,
+  documentId: null,
 
   setState: (state) => set({ state }),
-  startSession: (cartId) => set({ state: 'active', sessionId: crypto.randomUUID(), cartId }),
+  startSession: (cartId, documentId) =>
+    set({
+      state: 'active',
+      sessionId: crypto.randomUUID(),
+      cartId,
+      documentId: documentId ?? null,
+    }),
   setCartId: (cartId) => set({ cartId }),
   setOrderId: (orderId) => set({ orderId }),
-  endSession: () => set({ state: 'idle', sessionId: null, cartId: null, orderId: null }),
+  setDocumentId: (documentId) => set({ documentId }),
+  endSession: () =>
+    set({
+      state: 'idle',
+      sessionId: null,
+      cartId: null,
+      orderId: null,
+      documentId: null,
+    }),
 }));

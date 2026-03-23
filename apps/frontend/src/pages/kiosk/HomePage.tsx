@@ -1,27 +1,13 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../../stores/useSessionStore';
-import { useCartStore } from '../../stores/useCartStore';
-import { createCart } from '../../services/cartService';
 import { format } from 'date-fns';
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { state, startSession } = useSessionStore();
-  const { clearCart } = useCartStore();
-  const [isStarting, setIsStarting] = useState(false);
+  const { state } = useSessionStore();
 
-  const handleStartPurchase = async () => {
-    if (isStarting) return;
-    setIsStarting(true);
-    try {
-      const { id: cartId } = await createCart();
-      clearCart();
-      startSession(cartId);
-      navigate('/kiosk/scan');
-    } catch {
-      setIsStarting(false);
-    }
+  const handleStartPurchase = () => {
+    navigate('/kiosk/id');
   };
 
   if (state === 'timeout') {
@@ -74,17 +60,16 @@ export function HomePage() {
               Toque el botón de abajo para comenzar su compra.
             </p>
             <p className="text-on-surface-variant text-sm">
-              1. Escanee sus productos · 2. Revise su carrito · 3. Pague y retire
+              1. Ingrese su documento · 2. Escanee productos · 3. Pague y retire
             </p>
           </div>
 
           <button
             onClick={handleStartPurchase}
-            disabled={isStarting}
-            className="w-full max-w-xl h-28 bg-[#b5000b] hover:bg-[#930007] disabled:opacity-70 rounded-[2rem] flex items-center justify-center gap-4 shadow-2xl shadow-[#b5000b]/40 hover:scale-[1.02] transition-all active:scale-95 group"
+            className="w-full max-w-xl h-28 bg-[#b5000b] hover:bg-[#930007] rounded-[2rem] flex items-center justify-center gap-4 shadow-2xl shadow-[#b5000b]/40 hover:scale-[1.02] transition-all active:scale-95 group"
           >
             <span className="text-white text-3xl font-black uppercase tracking-tighter">
-              {isStarting ? 'Creando carrito...' : 'Iniciar compra'}
+              Iniciar compra
             </span>
             <span className="material-symbols-outlined text-white text-3xl group-hover:translate-x-2 transition-transform">arrow_forward</span>
           </button>

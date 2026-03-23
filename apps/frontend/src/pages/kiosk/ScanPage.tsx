@@ -10,6 +10,7 @@ import {
   updateCartItem,
   removeCartItem as removeCartItemApi,
 } from '../../services/cartService';
+import { createOrder } from '../../services/orderService';
 import type { CartItem } from '../../types';
 
 function CartSidebarItem({
@@ -70,9 +71,11 @@ function CartSidebarItem({
 export function ScanPage() {
   const navigate = useNavigate();
   const cartId = useSessionStore((s) => s.cartId);
+  const setOrderId = useSessionStore((s) => s.setOrderId);
   const addItem = useCartStore((s) => s.addItem);
   const addItemFromApi = useCartStore((s) => s.addItemFromApi);
   const { items, subtotal, tax, total, updateQuantity, removeItem } = useCartStore();
+  const [isConfirming, setIsConfirming] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [scanStatus, setScanStatus] = useState<'idle' | 'valid' | 'invalid' | 'partial'>('idle');
   const [cameraActive, setCameraActive] = useState(false);
@@ -80,6 +83,12 @@ export function ScanPage() {
   const scanCooldownRef = useRef(false);
 
   const [toastProduct, setToastProduct] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!cartId) {
+      navigate('/kiosk/id', { replace: true });
+    }
+  }, [cartId, navigate]);
 
   const processCode = useCallback(
     async (code: string) => {
@@ -156,6 +165,18 @@ export function ScanPage() {
     [cartId, removeItem]
   );
 
+  const handleConfirm = useCallback(async () => {
+    if (!cartId || items.length === 0 || isConfirming) return;
+    setIsConfirming(true);
+    try {
+      const order = await createOrder(cartId);
+      setOrderId(order.id);
+      navigate('/kiosk/payment');
+    } catch {
+      setIsConfirming(false);
+    }
+  }, [cartId, items.length, isConfirming, navigate, setOrderId]);
+
   // Fallback USB: escáneres USB emulan teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -202,12 +223,12 @@ export function ScanPage() {
         </button>
         <h2 className="text-xl font-black text-[#1a1c1c] tracking-tight">Escanear productos</h2>
         <button
-          onClick={() => items.length > 0 && navigate('/kiosk/cart')}
-          disabled={items.length === 0}
+          onClick={handleConfirm}
+          disabled={items.length === 0 || isConfirming}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#b5000b] hover:bg-[#930007] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#b5000b] text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition-all"
         >
           <span className="material-symbols-outlined text-xl">check_circle</span>
-          Confirmar
+          {isConfirming ? 'Procesando...' : 'Confirmar'}
         </button>
       </header>
 
