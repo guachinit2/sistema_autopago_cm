@@ -44,3 +44,27 @@ export function playProcessingBeep(): void {
     // Ignorar si AudioContext no está soportado
   }
 }
+
+/** Sonido de impresión de recibo (doble beep suave). */
+export function playPrintBeep(): void {
+  try {
+    const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = 600;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime + 0.12);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+  } catch {
+    // Ignorar si AudioContext no está soportado
+  }
+}

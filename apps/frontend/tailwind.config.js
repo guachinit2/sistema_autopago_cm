@@ -14,6 +14,7 @@ export default {
         'on-primary': '#ffffff',
         secondary: '#3a5f94',
         'on-secondary': '#ffffff',
+        surface: '#f9f9f9',
         'surface-container-low': '#f3f3f3',
         'surface-container-lowest': '#ffffff',
         'surface-container-high': '#e8e8e8',

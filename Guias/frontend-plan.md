@@ -16,11 +16,11 @@ Este documento detalla el plan de desarrollo del frontend para el sistema de aut
 | | **4.4** Pantalla de Selección de Pago | ✅ Completado |
 | | **4.5** Pantalla de Confirmación de Pago | ✅ Completado |
 | | **4.5.5** Pantalla de Ingreso de Documento de Identidad | 🔲 Siguiente |
-| | **4.6** Pantalla de Recibo Digital | 🔲 Pendiente |
+| | **4.6** Pantalla de Recibo Digital | ✅ Completado |
 | **Fase 2** | 4.7–4.10 (Pesaje, Operador) | 🔲 Pendiente |
 | **Fase 3** | 4.11–4.15 (Admin, Reportes) | 🔲 Pendiente |
 
-**Fase actual:** 4.5.5 — Pantalla de Ingreso de Documento de Identidad
+**Fase actual:** 4.6 completado — Fase 1 MVP finalizada
 
 **Flujo actual:** Home → ID (4.5.5) → Escaneo → Pagos → Confirmación → Recibo *(CartPage eliminada)*
 
